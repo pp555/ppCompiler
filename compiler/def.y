@@ -1,6 +1,8 @@
 %{
 #include <string.h>
 #include <stdio.h>
+
+FILE *npnfile;
 %}
 
 %union 
@@ -24,8 +26,10 @@ float	fval;
 %token <comment_end> COMMENT_END
 
 %token <if> IF
+%token <else> ELSE
 %token <while> WHILE
 %token <for> FOR
+%token <do> DO
 
 %token <increment> OP_INCREMENT
 %token <decrement> OP_DECREMENT
@@ -40,62 +44,94 @@ float	fval;
 %left '+' '-'
 %left '*' '/'
 
-%start instruction
 
 %%
-instruction
-	:if					{}
-	|for				{}
-	|while				{}
-	|declaration ';'	{}
-	|wyr ';'			{printf("wyr\n");}
-	|';'				{}
+bloki
+	:blok							{printf("blok\n");fprintf(npnfile, "\n");}
+	|bloki blok						{printf("bloki\n");fprintf(npnfile, "\n");}
+	|sub_block
 	;
-if
-	:IF '(' wyr ')'	instruction	{printf("if\n");}
+blok
+	:declaration ';'				{}
+	|assign ';'						{fprintf(npnfile, ";");}
+	|if_stmt						{}
+	|do_while_stmt					{}
+	|while_stmt						{}
+	|for_stmt						{}
+	|function_call					{}
 	;
-for
-	:FOR '(' declaration ';' wyr ';' wyr ')' instruction		{printf("for\n");}
+if_stmt
+	:IF '(' wyr ')' control_body										{printf("if\n");}
+	|IF '(' wyr ')' sub_block ELSE control_body							{printf("if-else\n");}
 	;
-while
-	:WHILE '(' wyr ')' instruction	{printf("while\n");}
+
+while_stmt
+	:WHILE '(' wyr ')' control_body										{printf("while\n");}
 	;
+for_stmt
+	:FOR '(' declaration ';' wyr ';' wyr ')' control_body				{printf("for\n");}
+	;
+do_while_stmt
+	:DO control_body WHILE ';'			{}
+	;
+
+function_call
+	:ID '(' arguments ')' ';'			{printf("funkcja z argumentami\n");}
+	|ID '(' ')' ';'						{printf("funkcja bez argumentow\n");}
+	;
+arguments
+	:argument							{}
+	|argument ',' arguments				{}
+	;
+argument
+	:wyr								{printf("argument\n");}
+	;
+
+control_body
+	:blok					{}
+	|sub_block				{}
+	;
+
+sub_block
+	:'{' bloki '}'			{}
+	;
+
 declaration
 	:TYPE_INT ID '=' wyr		{printf("int declaration and definition\n");}
 	|TYPE_FLOAT ID '=' wyr		{printf("float declaration and definition\n");}
-	|TYPE_INT ID		{printf("int declaration\n");}
-	|TYPE_FLOAT ID		{printf("float declaration\n");}
+	|TYPE_INT ID				{printf("int declaration\n");}
+	|TYPE_FLOAT ID				{printf("float declaration\n");}
+	;
+assign
+	:ident '=' wyr				{printf("przypisanie\n");fprintf(npnfile, "=");}
+	;
+ident
+	:ID							{printf("$1\n");fprintf(npnfile, $1);fprintf(npnfile, " ");}
 	;
 wyr
-	:wyr OP_COMPARE wyr	{printf("porownanie\n");}
-	|wyr OP_LE wyr	{printf("porownanie\n");}
-	|wyr OP_GE wyr	{printf("porownanie\n");}
-	|wyr '<' wyr	{printf("porownanie\n");}
-	|wyr '>' wyr	{printf("porownanie\n");}
-
-
-	|wyr '+' skladnik	{printf("wyrazenie z + \n");}
-	|wyr '-' skladnik	{printf("wyrazenie z - \n");}
-	|skladnik		{printf("wyrazenie pojedyncze \n");}
+	:wyr '+' skladnik			{printf("wyrazenie z + \n");fprintf(npnfile, "+");}
+	|wyr '-' skladnik			{printf("wyrazenie z - \n");fprintf(npnfile, "-");}
+	|skladnik					{printf("wyrazenie pojedyncze \n");}
 	;
 skladnik
-	:skladnik '*' czynnik	{printf("skladnik z * \n");}
-	|skladnik '/' czynnik	{printf("skladnik z / \n");}
-	|czynnik		{printf("skladnik pojedynczy \n");}
+	:skladnik '*' czynnik		{printf("skladnik z * \n");fprintf(npnfile, "*");}
+	|skladnik '/' czynnik		{printf("skladnik z / \n");fprintf(npnfile, "/");}
+	|czynnik					{printf("skladnik pojedynczy \n");}
 	;
 czynnik
-
-	:ID OP_INCREMENT	{printf("inkrementacja \n");}
-	|ID OP_DECREMENT	{printf("dekrementacja \n");}
-
-	|ID			{printf("czynnik znakowy\n");} 
-	|LC			{printf("czynnik liczbowy\n");}
-	|'(' wyr ')'		{printf("wyrazenie w nawiasach\n");}
+	:ident						{printf("identyfikator\n");} 
+	|LC							{printf("czynnik liczbowy\n");fprintf(npnfile, "%d ", $1);}
+	|LR							{printf("czynnik liczbowy\n");fprintf(npnfile, "%d ", $1);}
+	|'(' wyr ')'				{printf("wyrazenie w nawiasach\n");}
 	;
+	
 %%
 int main(int argc, char *argv[])
 {
+	npnfile = fopen("out.txt", "w");
 	yyparse();
+	fclose(npnfile);
+
 	return 0;
 }
 
