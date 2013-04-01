@@ -1,0 +1,2 @@
+sprawdzanie w tablicy symboli cyz symbol istnieje
+czyszczenie symboli tymczasowych z tablicy symboli
