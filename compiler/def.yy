@@ -110,13 +110,13 @@ sub_block
 	;
 
 declaration
-	:TYPE_INT ID '=' wyr					{printf("int declaration and definition\n");}
-	|TYPE_FLOAT ID '=' wyr					{printf("float declaration and definition\n");}
-	|TYPE_INT ID							{printf("int declaration\n");}
-	|TYPE_FLOAT ID							{printf("float declaration\n");}
+	:TYPE_INT ID '=' wyr				{printf("int declaration and definition\n");}
+	|TYPE_FLOAT ID '=' wyr				{printf("float declaration and definition\n");}
+	|TYPE_INT ident						{printf("int declaration\n"); compiler.declaration(Number::NUM_INT);}
+	|TYPE_FLOAT ident						{printf("float declaration\n"); compiler.declaration(Number::NUM_FLOAT);}
 	;
 assign
-	:ident '=' wyr							{printf("przypisanie\n");fprintf(npnfile, "=");/*compiler.operatorFound("=");*/}
+	:ident '=' wyr							{printf("przypisanie\n");fprintf(npnfile, "=");compiler.assignment();}
 	;
 ident
 	:ID										{fprintf(npnfile, $1);fprintf(npnfile, " ");compiler.push(new Identifier($1));}
@@ -148,6 +148,7 @@ int main(int argc, char *argv[])
 	fclose(npnfile);
 
 	compiler.checkStack();
+	compiler.printSymbols();
 
 	return 0;
 }
