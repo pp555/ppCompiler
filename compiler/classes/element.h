@@ -1,6 +1,8 @@
 #ifndef ELEMENT_H
 #define ELEMENT_H
 
+#include <iostream>
+
 class Element
 {
 public:
@@ -17,6 +19,8 @@ public:
 	{
 		return _type;
 	}
+
+	virtual std::string toString() = 0;
 
 private:
 	Type _type;

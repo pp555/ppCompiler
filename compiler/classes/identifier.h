@@ -15,6 +15,11 @@ public:
 		return _name;
 	}
 
+	std::string toString()
+	{
+		return _name;
+	}
+
 private:
 	std::string _name;
 };

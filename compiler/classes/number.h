@@ -1,6 +1,8 @@
 #ifndef NUMBER_H
 #define NUMBER_H
 
+#include <sstream>
+
 class Number : public Element
 {
 public:
@@ -8,7 +10,7 @@ public:
 	{
 		NUM_INT,
 		NUM_FLOAT
-	} _numberType;
+	};
 
 
 	Number(int number) : Element(Element::Number), _numberType(NUM_INT), _ival(number)
@@ -30,13 +32,29 @@ public:
 	NumberType numberType()
 	{
 		return _numberType;
-	} 
+	}
 
+	std::string toString()
+	{
+		std::stringstream stream;
+		switch(_numberType)
+		{
+		case NUM_INT:
+			stream << _ival;
+			break;
+		case NUM_FLOAT:
+			stream << _fval;
+			break;
+		}
 
+		return stream.str();
+	}
 
 private:
 	int _ival;
 	float _fval;
+
+	NumberType _numberType;
 
 };
 

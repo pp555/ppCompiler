@@ -2,61 +2,19 @@
 #include <iostream>
 #include <fstream>
 #include <string>
-#include <stack>
 
-#include "inc/element.h"
-#include "inc/identifier.h"
-#include "inc/number.h"
+#include "classes/element.h"
+#include "classes/identifier.h"
+#include "classes/number.h"
+#include "classes/compiler.h"
 
 FILE *npnfile;
+
+Compiler compiler;
 
 extern "C" int yylex();
 extern "C" int yyerror(const char *msg, ...);
 using namespace std;
-
-std::stack<Element*> elements;
-
-void operatorFound(const std::string &op)
-{
-	cout << "operator found" << endl;
-	if(elements.empty())
-	{
-		cerr << "error: stack is empty!" << endl;
-		return;
-	}
-
-	ofstream outFile("outFile.txt", ios::out);
-
-	Element *elem = elements.top();
-		
-	switch(elem->type())
-	{
-	case Element::Identifier:
-		{
-			Identifier *e = static_cast<Identifier*>(elem);
-			cout << "id:\t" << e->name() << endl;
-		}
-		break;
-	case Element::Number:
-		{
-			Number *e = static_cast<Number*>(elem);
-			switch(e->numberType())
-			{
-			case Number::NUM_INT:
-				cout << "int:\t" << e->ival() << endl;
-				outFile << e->ival();
-				break;
-			case Number::NUM_FLOAT:
-				cout << "float:\t" << e->fval() << endl;
-				break; 
-			}
-		}
-		break;
-	}
-
-	elements.pop();
-	delete elem;
-}
 
 %}
 
@@ -158,25 +116,25 @@ declaration
 	|TYPE_FLOAT ID							{printf("float declaration\n");}
 	;
 assign
-	:ident '=' wyr							{printf("przypisanie\n");fprintf(npnfile, "=");}
+	:ident '=' wyr							{printf("przypisanie\n");fprintf(npnfile, "=");/*compiler.operatorFound("=");*/}
 	;
 ident
-	:ID									{printf("$1\n");fprintf(npnfile, $1);fprintf(npnfile, " ");elements.push(new Identifier($1));}
+	:ID										{fprintf(npnfile, $1);fprintf(npnfile, " ");compiler.push(new Identifier($1));}
 	;
 wyr
-	:wyr '+' skladnik						{printf("wyrazenie z + \n");fprintf(npnfile, "+");operatorFound("+");}
-	|wyr '-' skladnik						{printf("wyrazenie z - \n");fprintf(npnfile, "-");operatorFound("-");}
+	:wyr '+' skladnik						{printf("wyrazenie z + \n");fprintf(npnfile, "+");compiler.operatorFound("+");}
+	|wyr '-' skladnik						{printf("wyrazenie z - \n");fprintf(npnfile, "-");compiler.operatorFound("-");}
 	|skladnik								{printf("wyrazenie pojedyncze \n");}
 	;
 skladnik
-	:skladnik '*' czynnik					{printf("skladnik z * \n");fprintf(npnfile, "*");operatorFound("*");}
-	|skladnik '/' czynnik					{printf("skladnik z / \n");fprintf(npnfile, "/");operatorFound("/");}
+	:skladnik '*' czynnik					{printf("skladnik z * \n");fprintf(npnfile, "*");compiler.operatorFound("*");}
+	|skladnik '/' czynnik					{printf("skladnik z / \n");fprintf(npnfile, "/");compiler.operatorFound("/");}
 	|czynnik								{printf("skladnik pojedynczy \n");}
 	;
 czynnik
 	:ident								{printf("identyfikator\n");} 
-	|LC									{printf("czynnik liczbowy\n");fprintf(npnfile, "%d ", $1);elements.push(new Number($1));}
-	|LR									{printf("czynnik liczbowy (f)\n");fprintf(npnfile, "%d ", $1);elements.push(new Number($1));}
+	|LC									{printf("czynnik liczbowy\n");fprintf(npnfile, "%d ", $1);compiler.push(new Number($1));}
+	|LR									{printf("czynnik liczbowy (f)\n");fprintf(npnfile, "%f ", $1);compiler.push(new Number($1));}
 	|'(' wyr ')'							{printf("wyrazenie w nawiasach\n");}
 	;
 	
@@ -189,38 +147,7 @@ int main(int argc, char *argv[])
 	yyparse();
 	fclose(npnfile);
 
-	while(!elements.empty())
-	{
-		cout << "stos nie jest pusty!" << endl;
-		Element *elem = elements.top();
-		
-		switch(elem->type())
-		{
-		case Element::Identifier:
-			{
-				Identifier *e = static_cast<Identifier*>(elem);
-				cout << e->name() << endl;
-			}
-			break;
-		case Element::Number:
-			{
-				Number *e = static_cast<Number*>(elem);
-				switch(e->numberType())
-				{
-				case Number::NUM_INT:
-					cout << "int:\t" << e->ival() << endl;
-					break;
-				case Number::NUM_FLOAT:
-					cout << "float:\t" << e->fval() << endl;
-					break; 
-				}
-			}
-			break;
-		}
-
-		elements.pop();
-		delete elem;
-	}
+	compiler.checkStack();
 
 	return 0;
 }

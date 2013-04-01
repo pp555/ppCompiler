@@ -19,9 +19,8 @@ lex.yy.c: z3.l
 def.tab.o:	def.tab.cc
 	$(CPP) -c def.tab.cc
 
-def.tab.cc:	def.yy
-#	$(YACC) -d def.yy
-	$(YACC) def.yy
+def.tab.cc:	def.yy classes/*
+	$(YACC) -d def.yy
 
 clean:
-	rm *.o leks
+	rm *.o leks def.tab.cc def.tab.hh lex.yy.c
