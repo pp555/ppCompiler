@@ -1,4 +1,5 @@
 CC=gcc
+CPP=g++
 LEX=flex
 YACC=bison
 LD=gcc
@@ -6,19 +7,21 @@ LD=gcc
 all:	leks
 
 leks:	def.tab.o lex.yy.o
-	$(CC) lex.yy.o def.tab.o -o leks -ll
+	$(CPP) lex.yy.o def.tab.o -o leks -ll
 
 lex.yy.o:	lex.yy.c
 	$(CC) -c lex.yy.c
 
 lex.yy.c: z3.l
-	$(LEX) -d z3.l
+#	$(LEX) -d z3.l
+	$(LEX) z3.l
 
-def.tab.o:	def.tab.c
-	$(CC) -c def.tab.c
+def.tab.o:	def.tab.cc
+	$(CPP) -c def.tab.cc
 
-def.tab.c:	def.y
-	$(YACC) -d def.y
+def.tab.cc:	def.yy
+#	$(YACC) -d def.yy
+	$(YACC) def.yy
 
 clean:
 	rm *.o leks

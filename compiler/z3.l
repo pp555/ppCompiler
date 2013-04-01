@@ -2,11 +2,11 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "def.tab.h"
+#include "def.tab.hh"
 
 extern int yylineno;
 
-int yyerror(char *msg,...);
+int yyerror(const char *msg, ...);
 
 %}
 %%
@@ -48,25 +48,26 @@ int yyerror(char *msg,...);
 \?			{return '?';}
 \:			{return ':';}
 
-if			{/*printf("if\n");*/return IF;}
-else		{/*printf("else\n");*/return ELSE;}
-while		{/*printf("while\n");*/return WHILE;}
-for			{/*printf("for\n");*/return FOR;}
-do			{/*printf("do\n");*/return DO;}
+if					{/*printf("if\n");*/return IF;}
+else					{/*printf("else\n");*/return ELSE;}
+while				{/*printf("while\n");*/return WHILE;}
+for					{/*printf("for\n");*/return FOR;}
+do					{/*printf("do\n");*/return DO;}
 
-int			{/*printf("type:int\n");*/ return TYPE_INT;}
-float			{/*printf("type:float\n");*/ return TYPE_FLOAT;}
+int					{/*printf("type:int\n");*/ return TYPE_INT;}
+float				{/*printf("type:float\n");*/ return TYPE_FLOAT;}
 
 [1-9][0-9]*\.[0-9]*		{yylval.fval = atof(yytext); printf("liczba(float) %f\n", yylval.fval); return LR;}
-[0-9]+		{printf("liczba\n"); yylval.ival = atoi(yytext); return LC;}
+[0-9]+				{printf("liczba\n"); yylval.ival = atoi(yytext); return LC;}
 	
 [A-Za-z_][A-Za-z0-9_]*	{printf("nazwa\n"); yylval.text = strdup(yytext); return ID;}
-\ |\t			{;}
-\;			{return ';';}
-\n			{yylineno++;}
-.			{yyerror("Błąd leksykalny\n");}
+\ |\t				{;}
+\;					{return ';';}
+\n					{yylineno++;}
+.					{yyerror("Błąd leksykalny\n");}
 %%
-int yyerror(char *msg,...)
+
+int yyerror(const char *msg, ...)
 {
 	printf("%d: %s\n", yylineno, msg);
 	exit(1);
