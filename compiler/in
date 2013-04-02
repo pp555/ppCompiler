@@ -1,5 +1,6 @@
 int b;
 int c;
+int a;
 b = 3;
 c = 5;
 a=b+c*7;

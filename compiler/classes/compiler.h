@@ -5,6 +5,7 @@
 #include <fstream>
 #include <sstream>
 #include <map>
+#include <cstdlib>
 
 using namespace std;
 
@@ -47,6 +48,29 @@ public:
 
 private:
 	int i;
+};
+
+class SymbolsMap : public std::map<std::string, int> 
+{
+public:
+	SymbolsMap()
+	{
+		
+	}
+	
+	int operator[](const std::string &key)
+	{
+		if(this->find(key) == this->end())
+		{
+			cerr << "undefined symbol:\t" << key << endl;
+			exit(1);
+		}
+		
+		return std::map<std::string, int>::operator [](key);
+	}
+private:
+
+
 };
 
 class Compiler
@@ -203,7 +227,7 @@ private:
 	}
 
 	std::stack<Element*> elements;
-	std::map<std::string, int> symbols;
+	SymbolsMap symbols;
 	Address addr;
 	ofstream outFile;
 	ofstream asmFile;

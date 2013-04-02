@@ -1,4 +1,3 @@
-sprawdzanie w tablicy symboli czy symbol istnieje
 czyszczenie symboli tymczasowych z tablicy symboli
 typy: int, float
 tablice
