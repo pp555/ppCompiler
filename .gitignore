@@ -14,3 +14,11 @@
 
 # backup files
 *~
+
+
+#flex and bison generated files
+compiler/def.tab.cc
+compiler/def.tab.hh
+compiler/leks
+compiler/lex.yy.c
+
