@@ -103,7 +103,15 @@ public:
 	
 	void ifStmt()
 	{
-		cout << "if" << endl;
+		//TODO
+		cout << "if:\t";
+		Element *elem = elements.top();
+		elements.pop();
+		
+		
+		cout << elem->toString();
+		cout << endl;
+		delete elem;
 	}
 
 	void operatorFound(const std::string &op)
@@ -115,57 +123,39 @@ public:
 			return;
 		}
 
-		Element *elem1 = elements.top();
+		Element *elemRight = elements.top();
 		elements.pop();
-		Element *elem2 = elements.top();
+		Element *elemLeft = elements.top();
 		elements.pop();
 		
-		outFile << tempIdentifier.next() << '=' << elem2->toString() << op << elem1->toString() << endl;
+		outFile << tempIdentifier.next() << '=' << elemLeft->toString() << op << elemRight->toString() << endl;
 		push(new Identifier(tempIdentifier.current()));
 		symbols.insert(tempIdentifier.current(), addr.next());
 
-		if(elem2->type() == Element::Identifier)
-			asmFile << "MOV R1,#" << symbols[elem2->toString()] << endl;
-		else
-			asmFile << "MOV R1," << elem2->toString() << endl;
+		asmFile << "MOV R1," << expandIfSymbol(elemLeft) << endl
+				<< "MOV R2," << expandIfSymbol(elemRight) << endl
+				<< operatorAsmName(op) << " R1,R2" << endl
+				<< "MOV #" << symbols[tempIdentifier.current()] << ",R1" << endl;
 
-		if(elem1->type() == Element::Identifier)
-			asmFile << "MOV R2,#" << symbols[elem1->toString()] << endl;
-		else
-			asmFile << "MOV R2," << elem1->toString() << endl;
-
-		asmFile << operatorAsmName(op) << " R1,R2" << endl;
-		asmFile << "MOV #" << symbols[tempIdentifier.current()] << ",R1" << endl;
-
-		delete elem1;
-		delete elem2;
+		delete elemRight;
+		delete elemLeft;
 	}
 
 	void assignment()
 	{
 		std::cout << "assignment" << endl;
 
-		Element *elem1 = elements.top();
+		Element *elemRight = elements.top();
 		elements.pop();
-		Element *elem2 = elements.top();
+		Element *elemLeft = elements.top();
 		elements.pop();
 
-		asmFile << "MOV ";
+		asmFile << "MOV "
+				<< expandIfSymbol(elemLeft) << ","
+				<< expandIfSymbol(elemRight) << endl;
 
-		if(elem2->type() == Element::Identifier)
-			asmFile << "#" << symbols[elem2->toString()];
-		else
-			asmFile << elem2->toString();
-
-		asmFile << ",";
-
-		if(elem1->type() == Element::Identifier)
-			asmFile << "#" << symbols[elem1->toString()] << endl;
-		else
-			asmFile << elem1->toString() << endl;
-
-		delete elem1;
-		delete elem2;
+		delete elemRight;
+		delete elemLeft;
 
 	}
 
@@ -244,6 +234,18 @@ private:
 		exit(1);
 	}
 
+	std::string expandIfSymbol(Element *element)
+	{
+		if(element->type() == Element::Identifier)
+		{
+			stringstream result;
+			result << "#" << symbols[element->toString()];
+			return result.str();
+		}
+		else
+			return element->toString();
+	}
+	
 	std::stack<Element*> elements;
 	SymbolsMap symbols;
 	Address addr;
