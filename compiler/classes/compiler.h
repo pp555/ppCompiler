@@ -9,8 +9,6 @@
 
 using namespace std;
 
-typedef std::pair<std::string, int> pairStringInt;
-
 extern int yylineno;
 
 class Address
@@ -55,10 +53,10 @@ private:
 class Variable //TODO: use in SymbolsMap
 {
 public:
-	Variable(int address, Number::NumberType type) : address(address), type(type)
-	{
-		
-	}
+	Variable() : address(-1), type(Number::NumInt)//TODO: remove default type
+	{}
+	Variable(int address, Number::NumberType type = Number::NumInt) : address(address), type(type)//TODO: remove default type
+	{}
 	Variable(const Variable &v) : address(v.getAddress()), type(v.getType())
 	{}
 	
@@ -77,8 +75,15 @@ private:
 	Number::NumberType type;
 	int arraySize; //TODO: arrays
 };
+ostream & operator <<(ostream &str, const Variable &v)
+{
+	str << v.getAddress() << "\t" << v.getType();
+	return str;
+}
 
-class SymbolsMap : public std::map<std::string, int> 
+typedef std::pair<std::string, Variable> pairStringVariable;
+
+class SymbolsMap : public std::map<std::string, Variable> 
 {
 public:
 	SymbolsMap()
@@ -86,7 +91,7 @@ public:
 		
 	}
 	
-	int operator[](const std::string &key)
+	Variable operator[](const std::string &key)
 	{
 		if(this->find(key) == this->end())
 		{
@@ -94,13 +99,12 @@ public:
 			exit(1);
 		}
 		
-		return std::map<std::string, int>::operator [](key);
+		return std::map<std::string, Variable>::operator [](key);
 	}
 	
-	void insert(const std::string &key, int value)
+	void insert(const std::string &key, int address, Number::NumberType type = Number::NumInt)
 	{
-		Variable v(value, Number::NumInt);
-		std::pair<iterator,bool> result = std::map<std::string, int>::insert(pairStringInt(key, value));
+		std::pair<iterator,bool> result = std::map<std::string, Variable>::insert(pairStringVariable(key, Variable(address, type)));
 		
 		if(!result.second)//already existed
 		{
@@ -157,12 +161,12 @@ public:
 		
 		outFile << tempIdentifier.next() << '=' << elemLeft->toString() << op << elemRight->toString() << endl;
 		push(new Identifier(tempIdentifier.current()));
-		symbols.insert(tempIdentifier.current(), addr.next());
+		symbols.insert(tempIdentifier.current(), addr.next());//TODO: add type
 
 		asmFile << "MOV R1," << expandIfSymbol(elemLeft) << endl
 				<< "MOV R2," << expandIfSymbol(elemRight) << endl
 				<< operatorAsmName(op) << " R1,R2" << endl
-				<< "MOV #" << symbols[tempIdentifier.current()] << ",R1" << endl;
+				<< "MOV #" << symbols[tempIdentifier.current()].getAddress() << ",R1" << endl;
 
 		delete elemRight;
 		delete elemLeft;
@@ -189,7 +193,7 @@ public:
 	void declaration(Number::NumberType type)
 	{
 		cout << "declaration of: " << type << endl;
-		symbols.insert(elements.top()->toString(), addr.next());
+		symbols.insert(elements.top()->toString(), addr.next(), type);
 		
 		delete elements.top();
 		elements.pop();
@@ -239,7 +243,7 @@ public:
 	void printSymbols()
 	{
 		std::cout << "ident\tadres" << endl;
-		for(std::map<std::string, int>::iterator it = symbols.begin(); it != symbols.end(); ++it)
+		for(std::map<std::string, Variable>::iterator it = symbols.begin(); it != symbols.end(); ++it)
 		{
 			std::cout << it->first << "\t" << it->second << endl;
 		}
@@ -266,7 +270,7 @@ private:
 		if(element->type() == Element::Identifier)
 		{
 			stringstream result;
-			result << "#" << symbols[element->toString()];
+			result << "#" << symbols[element->toString()].getAddress();
 			return result.str();
 		}
 		else
