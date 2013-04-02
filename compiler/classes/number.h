@@ -8,25 +8,31 @@ class Number : public Element
 public:
 	enum NumberType
 	{
-		NUM_INT,
-		NUM_FLOAT
+		NumInt,
+		NumFloat
 	};
 
 
-	Number(int number) : Element(Element::Number), _numberType(NUM_INT), _ival(number)
-	{}
-	Number(float number) : Element(Element::Number), _numberType(NUM_FLOAT), _fval(number)
-	{}
-	Number(double number) : Element(Element::Number), _numberType(NUM_FLOAT), _fval(number)
-	{}
+	Number(int number) : Element(Element::Number), _numberType(NumInt)
+	{
+		_val.ival = number;
+	}
+	Number(float number) : Element(Element::Number), _numberType(NumFloat)
+	{
+		_val.fval = number;
+	}
+	Number(double number) : Element(Element::Number), _numberType(NumFloat)
+	{
+		_val.fval = number;
+	}
 
 	int ival() const
 	{
-		return _ival;
+		return _val.ival;
 	}
 	float fval() const
 	{
-		return _fval;
+		return _val.fval;
 	}
 
 	NumberType numberType()
@@ -39,11 +45,11 @@ public:
 		std::stringstream stream;
 		switch(_numberType)
 		{
-		case NUM_INT:
-			stream << _ival;
+		case NumInt:
+			stream << _val.ival;
 			break;
-		case NUM_FLOAT:
-			stream << _fval;
+		case NumFloat:
+			stream << _val.fval;
 			break;
 		}
 
@@ -51,8 +57,11 @@ public:
 	}
 
 private:
-	int _ival;
-	float _fval;
+	union
+	{
+		int ival;
+		float fval;
+	} _val;
 
 	NumberType _numberType;
 

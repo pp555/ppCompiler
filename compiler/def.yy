@@ -112,8 +112,8 @@ sub_block
 declaration
 	:TYPE_INT ID '=' wyr				{printf("int declaration and definition\n");}
 	|TYPE_FLOAT ID '=' wyr				{printf("float declaration and definition\n");}
-	|TYPE_INT ident						{printf("int declaration\n"); compiler.declaration(Number::NUM_INT);}
-	|TYPE_FLOAT ident						{printf("float declaration\n"); compiler.declaration(Number::NUM_FLOAT);}
+	|TYPE_INT ident						{printf("int declaration\n"); compiler.declaration(Number::NumInt);}
+	|TYPE_FLOAT ident						{printf("float declaration\n"); compiler.declaration(Number::NumFloat);}
 	;
 assign
 	:ident '=' wyr							{printf("przypisanie\n");fprintf(npnfile, "=");compiler.assignment();}

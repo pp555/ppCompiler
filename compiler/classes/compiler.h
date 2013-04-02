@@ -52,6 +52,32 @@ private:
 	int i;
 };
 
+class Variable //TODO: use in SymbolsMap
+{
+public:
+	Variable(int address, Number::NumberType type) : address(address), type(type)
+	{
+		
+	}
+	Variable(const Variable &v) : address(v.getAddress()), type(v.getType())
+	{}
+	
+	int getAddress() const
+	{
+		return address;
+	}
+	
+	Number::NumberType getType() const
+	{
+		return type;
+	}
+	
+private:
+	int address;
+	Number::NumberType type;
+	int arraySize; //TODO: arrays
+};
+
 class SymbolsMap : public std::map<std::string, int> 
 {
 public:
@@ -73,6 +99,7 @@ public:
 	
 	void insert(const std::string &key, int value)
 	{
+		Variable v(value, Number::NumInt);
 		std::pair<iterator,bool> result = std::map<std::string, int>::insert(pairStringInt(key, value));
 		
 		if(!result.second)//already existed
@@ -193,10 +220,10 @@ public:
 					Number *e = static_cast<Number*>(elem);
 					switch(e->numberType())
 					{
-					case Number::NUM_INT:
+					case Number::NumInt:
 						cout << "int:\t" << e->ival() << endl;
 						break;
-					case Number::NUM_FLOAT:
+					case Number::NumFloat:
 						cout << "float:\t" << e->fval() << endl;
 						break; 
 					}
