@@ -74,7 +74,7 @@ blok
 	|function_call						{}
 	;
 if_stmt
-	:IF '(' wyr ')' control_body										{printf("if\n");}
+	:IF '(' wyr ')' control_body										{compiler.ifStmt();}
 	|IF '(' wyr ')' sub_block ELSE control_body							{printf("if-else\n");}
 	;
 

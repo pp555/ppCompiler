@@ -2,10 +2,10 @@
 #include <stdlib.h>
 #include <string.h>
 
+
 #include "def.tab.hh"
 
 extern int yylineno;
-
 int yyerror(const char *msg, ...);
 
 %}

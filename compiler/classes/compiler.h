@@ -11,6 +11,8 @@ using namespace std;
 
 typedef std::pair<std::string, int> pairStringInt;
 
+extern int yylineno;
+
 class Address
 {
 public:
@@ -62,11 +64,22 @@ public:
 	{
 		if(this->find(key) == this->end())
 		{
-			cerr << "undefined symbol:\t" << key << endl;
+			cerr << yylineno << ":\tundefined symbol:\t" << key << endl;
 			exit(1);
 		}
 		
 		return std::map<std::string, int>::operator [](key);
+	}
+	
+	void insert(const std::string &key, int value)
+	{
+		std::pair<iterator,bool> result = std::map<std::string, int>::insert(pairStringInt(key, value));
+		
+		if(!result.second)//already existed
+		{
+			cerr << yylineno << ":\tsymbol redefinition:\t" << key << endl;
+			exit(1);
+		}
 	}
 private:
 
@@ -87,13 +100,18 @@ public:
 		outFile.close();
 		asmFile.close();
 	}
+	
+	void ifStmt()
+	{
+		cout << "if" << endl;
+	}
 
 	void operatorFound(const std::string &op)
 	{
 		cout << "operator found:\t" << op << endl;
 		if(elements.empty())
 		{
-			cerr << "error: stack is empty!" << endl;
+			cerr << yylineno << ":\terror: stack is empty!" << endl;
 			return;
 		}
 
@@ -104,7 +122,7 @@ public:
 		
 		outFile << tempIdentifier.next() << '=' << elem2->toString() << op << elem1->toString() << endl;
 		push(new Identifier(tempIdentifier.current()));
-		symbols.insert(pairStringInt(tempIdentifier.current(), addr.next()));
+		symbols.insert(tempIdentifier.current(), addr.next());
 
 		if(elem2->type() == Element::Identifier)
 			asmFile << "MOV R1,#" << symbols[elem2->toString()] << endl;
@@ -154,7 +172,7 @@ public:
 	void declaration(Number::NumberType type)
 	{
 		cout << "declaration of: " << type << endl;
-		symbols.insert(pairStringInt(elements.top()->toString(), addr.next()));
+		symbols.insert(elements.top()->toString(), addr.next());
 		
 		delete elements.top();
 		elements.pop();
@@ -222,7 +240,7 @@ private:
 		if("/" == op)
 			return "DIV";
 		
-		std::cerr << "converting to asm:\tunnkonwn operator" << endl;
+		std::cerr << yylineno << ":\tconverting to asm:\tunnkonwn operator:\t" << op << endl;
 		exit(1);
 	}
 
