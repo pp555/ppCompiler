@@ -4,14 +4,20 @@
 
 int main()
 {
-	AstNodes::Number n(5.0);
-	std::cout << n.codeGen() << std::endl;
+	AstNodes::Declaration def(NumInt, "a");
+	def.codeGen();
 	
-	AstNodes::Variable v("a", 0, NumInt);
-	std::cout << v.codeGen() << std::endl;
-	
+	AstNodes::Number n(6);
+	AstNodes::Variable v("a");
 	AstNodes::Assignment a(&v, &n);
-	std::cout << a.codeGen() << std::endl;
+	std::cout << a.codeGen();
+	
+	
+	
+	
+	
+	AstNodes::ArithmeticOperation add("+", &n, &v);
+	std::cout << add.codeGen();
 	
 	
 }
