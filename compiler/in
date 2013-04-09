@@ -6,4 +6,9 @@ b = 3;
 c = 5;
 mojWynik=b+2*c+5;
 
+if(b)
+{
+	mojWynik=0;
+}
+
 }

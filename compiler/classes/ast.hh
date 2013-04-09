@@ -77,12 +77,13 @@ class NodeType
 public:
 	enum Type
 	{
-		Number,
-		Variable,
-		ArithmeticOperation,
-		Assignment,
-		Declaration,
-		CodeBlock
+		Number = 0,
+		Variable = 1,
+		ArithmeticOperation = 2,
+		Assignment = 3,
+		Declaration = 4,
+		CodeBlock = 5,
+		IfStmt = 6
 	};
 };
 		
@@ -398,6 +399,7 @@ namespace AstNodes
 			{
 				AstNodes::AstNode *e = elements.get();
 				_blockContent.push_front(e);
+				std::cout << "added to block:\t" << e->type() << std::endl;
 			}
 		}
 		
@@ -417,6 +419,24 @@ namespace AstNodes
 	private:
 		std::list<AstNode*> _blockContent;
 		
+	};
+	
+	class IfStmt : public AstNode
+	{
+	public:
+		IfStmt(AstNode *codeBlock) : AstNode(NodeType::IfStmt), _codeBlock(codeBlock)
+		{
+			//std::cout << "adding if stmt\n" << codeBlock->type() << std::endl;
+		}
+		
+		std::string codeGen()
+		{
+			//first element of code block is if condition
+			return "s1:"+_codeBlock->codeGen()+"e1:";
+		}
+		
+	private:
+		AstNode *_codeBlock;
 	};
 }
 

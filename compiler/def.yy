@@ -72,7 +72,7 @@ blok
 	|function_call						{}
 	;
 if_stmt
-	:IF '(' wyr ')' sub_block										{}
+	:IF '(' wyr ')' sub_block										{elements.add(new AstNodes::IfStmt(elements.get()));}
 	|IF '(' wyr ')' sub_block ELSE sub_block							{printf("if-else\n");}
 	;
 
