@@ -63,16 +63,16 @@ bloki
 	|sub_block						{}
 	;
 blok
-	:declaration ';'					{}
-	|assign ';'							{}
-	|if_stmt							{}
+	:declaration ';'					{blocksStack.top()->addStmt(elements.get());}
+	|assign ';'							{blocksStack.top()->addStmt(elements.get());}
+	|if_stmt							{blocksStack.top()->addStmt(elements.get());}
 	|do_while_stmt						{}
 	|while_stmt							{}
 	|for_stmt							{}
 	|function_call						{}
 	;
 if_stmt
-	:IF '(' wyr ')' sub_block										{elements.add(new AstNodes::IfStmt(elements.get()));}
+	:IF '(' wyr ')' sub_block										{elements.add(new AstNodes::IfStmt(elements.get(), elements.get()));}
 	|IF '(' wyr ')' sub_block ELSE sub_block							{printf("if-else\n");}
 	;
 
@@ -104,9 +104,9 @@ control_body
 	;
 
 sub_block
-	: sub_block_begin bloki '}'							{printf("block end\n");elements.add(new AstNodes::CodeBlock());}
+	: sub_block_begin bloki '}'							{printf("block end\n");elements.add(blocksStack.top());blocksStack.pop();}
 	;
-sub_block_begin : '{'									{printf("block begin\n");};
+sub_block_begin : '{'									{printf("block begin\n");blocksStack.push(new AstNodes::CodeBlock());};
 
 declaration
 	:TYPE_INT ident							{elements.add(new AstNodes::Declaration(NumInt, static_cast<AstNodes::Variable*>(elements.get())));}
@@ -139,23 +139,33 @@ czynnik
 
 int main(int argc, char *argv[])
 {
+	blocksStack.push(new AstNodes::CodeBlock());
 	yyparse();
 
 	//compiler.checkStack();
 	
 	
-	std::ofstream asmFile("app.asm", ios::out);
+	
+	
+	AstNodes::AstNode *root = elements.get();
+	std::string app = root->codeGen();
 	
 	
 	while(!elements.isEmpty())
 	{
-		cout << "----------   stack element   ----------\n" << endl;
-		
+		std::cerr << "stack is not empty after getting root element\n";
 		AstNodes::AstNode *e = elements.get();
-		asmFile << e->codeGen();
+		cout << "stack element:\t" << e->toString() << endl;
+		std::cout << e->codeGen();
 	}
-	symbols.printSymbols();
+	//symbols.printSymbols();
+	
+	//TODO:replacing labels
+	app.replace(app.find("label.e1:"), 9, "line_no:");
+	app.replace(app.find("label.s1:"), 9, "line_no:");
 
+	std::ofstream asmFile("app.asm", ios::out);
+	asmFile << app;
 	asmFile.close();
 
 	return 0;

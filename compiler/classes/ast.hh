@@ -105,6 +105,8 @@ namespace AstNodes
 			return _type;
 		}
 		
+		virtual std::string toString(){return "AstNode";};
+		
 	private:
 		NodeType::Type _type;
 	};
@@ -391,6 +393,7 @@ namespace AstNodes
 	public:
 		CodeBlock() : AstNode(NodeType::CodeBlock)
 		{
+			/*
 			std::cout << "new code block in line " << yylineno << std::endl;
 			while(!elements.isEmpty())
 			{
@@ -398,11 +401,12 @@ namespace AstNodes
 				_blockContent.push_front(e);
 				std::cout << "added to block:\t" << e->type() << std::endl;
 			}
+			*/
 		}
 		
 		Code codeGen()
 		{
-			std::cout << ":gen code for block\n";
+			std::cout << "gen code for block\n";
 			
 			std::stringstream result;
 			
@@ -413,6 +417,19 @@ namespace AstNodes
 			
 			return result.str();
 		}
+		
+		virtual std::string toString(){return "CodeBlock";};
+		
+		void addStmt(AstNode *node)
+		{
+			_blockContent.push_back(node);
+		}
+		
+		int stmtCount() const
+		{
+			return _blockContent.size();
+		}
+		
 	private:
 		std::list<AstNode*> _blockContent;
 		
@@ -421,20 +438,43 @@ namespace AstNodes
 	class IfStmt : public AstNode
 	{
 	public:
-		IfStmt(AstNode *codeBlock) : AstNode(NodeType::IfStmt), _codeBlock(codeBlock)
+		IfStmt(AstNode *codeBlock, AstNode *condition) : AstNode(NodeType::IfStmt), _codeBlock(codeBlock), _condition(condition)
 		{
-			//std::cout << "adding if stmt\n" << codeBlock->type() << std::endl;
+			//std::cout << "adding if stmt\n" << codeBlock->type() << "\t" << condition->type() << std::endl;
 		}
 		
 		std::string codeGen()
 		{
-			//first element of code block is if condition
-			return "s1:"+_codeBlock->codeGen()+"e1:";
+			std::stringstream result;
+			if(NodeType::Number == _condition->type() || NodeType::Variable == _condition->type())
+			{
+				//condition:!=0
+				result << "SUB " << _condition->codeGen()  << ",0" << ENDLINE;
+				result << "JZ label.e1" << ENDLINE;
+			}
+			else if(NodeType::ArithmeticOperation == _condition->type())
+			{
+				result << _condition->codeGen();
+				//condition:!=0
+				result << "SUB " << elements.get()->codeGen() << ",0" << ENDLINE;
+				result << "JZ label.e1" << ENDLINE;
+			}
+			else//TODO: add logical expresions
+			{
+				std::cerr << "incorrect if condition\n";
+				exit(1);
+			}
+			
+			result << "label.s1:" << _codeBlock->codeGen() << "label.e1:";
+			return result.str();
 		}
 		
 	private:
 		AstNode *_codeBlock;
+		AstNode *_condition;
 	};
 }
+
+std::stack<AstNodes::CodeBlock *> blocksStack;
 
 #endif //AST_HH
