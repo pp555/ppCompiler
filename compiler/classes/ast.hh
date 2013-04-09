@@ -148,17 +148,14 @@ namespace AstNodes
 	public:
 		Number(double value) : AstNode(NodeType::Number), _numberType(NumFloat)
 		{
-			std::cout << "float number\n";
 			_val.fval = value;
 		}
 		Number(float value) : AstNode(NodeType::Number), _numberType(NumFloat)
 		{
-			std::cout << "float number\n";
 			_val.fval = value;
 		}
 		Number(int value) : AstNode(NodeType::Number), _numberType(NumInt)
 		{
-			std::cout << "int number\n";
 			_val.ival = value;
 		}
 		

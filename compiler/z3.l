@@ -57,10 +57,10 @@ do					{/*printf("do\n");*/return DO;}
 int					{/*printf("type:int\n");*/ return TYPE_INT;}
 float				{/*printf("type:float\n");*/ return TYPE_FLOAT;}
 
-[1-9][0-9]*\.[0-9]*		{yylval.fval = atof(yytext); printf("liczba(float) %f\n", yylval.fval); return LR;}
-[0-9]+				{printf("liczba\n"); yylval.ival = atoi(yytext); return LC;}
+[1-9][0-9]*\.[0-9]*		{yylval.fval = atof(yytext); return LR;}
+[0-9]+				{yylval.ival = atoi(yytext); return LC;}
 	
-[A-Za-z_][A-Za-z0-9_]*	{printf("nazwa\n"); yylval.text = strdup(yytext); return ID;}
+[A-Za-z_][A-Za-z0-9_]*	{yylval.text = strdup(yytext); return ID;}
 \ |\t				{;}
 \;					{return ';';}
 \n					{yylineno++;}

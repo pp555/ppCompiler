@@ -58,16 +58,16 @@ float	fval;
 
 %%
 bloki
-	:blok							{printf("blok\n");}
-	|bloki blok						{printf("bloki\n");}
+	:blok							{}
+	|bloki blok						{}
 	|sub_block						{}
 	;
 blok
 	:declaration ';'					{}
-	|assign ';'						{}
+	|assign ';'							{}
 	|if_stmt							{}
 	|do_while_stmt						{}
-	|while_stmt						{}
+	|while_stmt							{}
 	|for_stmt							{}
 	|function_call						{}
 	;
@@ -104,34 +104,35 @@ control_body
 	;
 
 sub_block
-	:'{' bloki '}'							{elements.add(new AstNodes::CodeBlock());}
+	: sub_block_begin bloki '}'							{printf("block end\n");elements.add(new AstNodes::CodeBlock());}
 	;
+sub_block_begin : '{'									{printf("block begin\n");};
 
 declaration
-	:TYPE_INT ident						{printf("int declaration\n"); elements.add(new AstNodes::Declaration(NumInt, static_cast<AstNodes::Variable*>(elements.get())));}
-	|TYPE_FLOAT ident						{printf("float declaration\n"); elements.add(new AstNodes::Declaration(NumFloat, static_cast<AstNodes::Variable*>(elements.get())));}
+	:TYPE_INT ident							{elements.add(new AstNodes::Declaration(NumInt, static_cast<AstNodes::Variable*>(elements.get())));}
+	|TYPE_FLOAT ident						{elements.add(new AstNodes::Declaration(NumFloat, static_cast<AstNodes::Variable*>(elements.get())));}
 	;
 assign
-	:ident '=' wyr							{printf("przypisanie\n");AstNodes::AstNode *rValue = elements.get();AstNodes::Variable *lValue = static_cast<AstNodes::Variable*>(elements.get());elements.add(new AstNodes::Assignment(lValue, rValue));}
+	:ident '=' wyr							{AstNodes::AstNode *rValue = elements.get();AstNodes::Variable *lValue = static_cast<AstNodes::Variable*>(elements.get());elements.add(new AstNodes::Assignment(lValue, rValue));}
 	;
 ident
 	:ID										{elements.add(new AstNodes::Variable($1));}
 	;
 wyr
-	:wyr '+' skladnik						{printf("wyrazenie z + \n");elements.add(AstNodes::ArithmeticOperation::createFromStack("+"));}
-	|wyr '-' skladnik						{printf("wyrazenie z - \n");elements.add(AstNodes::ArithmeticOperation::createFromStack("-"));}
-	|skladnik								{printf("wyrazenie pojedyncze \n");}
+	:wyr '+' skladnik						{elements.add(AstNodes::ArithmeticOperation::createFromStack("+"));}
+	|wyr '-' skladnik						{elements.add(AstNodes::ArithmeticOperation::createFromStack("-"));}
+	|skladnik								{}
 	;
 skladnik
-	:skladnik '*' czynnik					{printf("skladnik z * \n");elements.add(AstNodes::ArithmeticOperation::createFromStack("*"));}
-	|skladnik '/' czynnik					{printf("skladnik z / \n");elements.add(AstNodes::ArithmeticOperation::createFromStack("/"));}
-	|czynnik								{printf("skladnik pojedynczy \n");}
+	:skladnik '*' czynnik					{elements.add(AstNodes::ArithmeticOperation::createFromStack("*"));}
+	|skladnik '/' czynnik					{elements.add(AstNodes::ArithmeticOperation::createFromStack("/"));}
+	|czynnik								{}
 	;
 czynnik
-	:ident								{printf("identyfikator\n");} 
-	|LC									{printf("czynnik liczbowy\n");elements.add(new AstNodes::Number($1));}
-	|LR									{printf("czynnik liczbowy (f)\n");elements.add(new AstNodes::Number($1));}
-	|'(' wyr ')'							{printf("wyrazenie w nawiasach\n");}
+	:ident								{} 
+	|LC									{elements.add(new AstNodes::Number($1));}
+	|LR									{elements.add(new AstNodes::Number($1));}
+	|'(' wyr ')'							{}
 	;
 	
 %%
