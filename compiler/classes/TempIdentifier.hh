@@ -7,23 +7,24 @@
 class TempIdentifier
 {
 public:
-	TempIdentifier() : i(-1)
+	TempIdentifier(const std::string &prefix) : i(-1), _prefix(prefix)
 	{}
 	std::string next()
 	{
 		std::stringstream stream;
-		stream << 't' << ++i;
+		stream << _prefix << ++i;
 		return stream.str();
 	}
 	std::string current() const
 	{
 		std::stringstream stream;
-		stream << 't' << i;
+		stream << _prefix << i;
 		return stream.str();
 	}
 
 private:
 	int i;
+	std::string _prefix;
 };
 
 #endif

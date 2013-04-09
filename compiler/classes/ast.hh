@@ -67,7 +67,7 @@ private:
 
 SymbolsMap symbols;
 
-TempIdentifier tempIdentifier;
+TempIdentifier tempIdentifier("t");
 Address addr;
 
 class NodeType
@@ -523,6 +523,7 @@ namespace AstNodes
 		AstNode *_rValue;
 	};
 	
+	TempIdentifier label("");
 	class IfStmt : public AstNode
 	{
 	public:
@@ -533,23 +534,24 @@ namespace AstNodes
 		
 		std::string codeGen()
 		{
+			label.next();
 			std::stringstream result;
 			if(NodeType::Number == _condition->type() || NodeType::Variable == _condition->type())
 			{
 				//condition:!=0
 				result << "SUB " << _condition->codeGen()  << ",0" << ENDLINE;
-				result << "JZ label.e1" << ENDLINE;
+				result << "JZ label.e" << label.current() << ENDLINE;
 			}
 			else if(NodeType::ArithmeticOperation == _condition->type())
 			{
 				result << _condition->codeGen();
 				//condition:!=0
 				result << "SUB " << elements.get()->codeGen() << ",0" << ENDLINE;
-				result << "JZ label.e1" << ENDLINE;
+				result << "JZ label.e" << label.current() << ENDLINE;
 			}
 			else if(NodeType::Comparison == _condition->type())
 			{
-				result << _condition->codeGen() << "label.e1" << ENDLINE;
+				result << _condition->codeGen() << "label.e" << label.current() << ENDLINE;
 			}
 			else
 			{
@@ -557,7 +559,7 @@ namespace AstNodes
 				exit(1);
 			}
 			
-			result << "label.s1:" << _codeBlock->codeGen() << "label.e1:";
+			result << "label.s" << label.current() << ":" << _codeBlock->codeGen() << "label.e" << label.current() << ":";
 			return result.str();
 		}
 		
