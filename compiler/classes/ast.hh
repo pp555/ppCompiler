@@ -14,9 +14,7 @@
 
 #define ENDLINE "\n"
 
-typedef std::string Code;//TODO: vectorof strings
-
-extern int yylineno;//TODO
+extern int yylineno;
 
 enum NumberType
 {
@@ -77,13 +75,14 @@ class NodeType
 public:
 	enum Type
 	{
-		Number = 0,
-		Variable = 1,
-		ArithmeticOperation = 2,
-		Assignment = 3,
-		Declaration = 4,
-		CodeBlock = 5,
-		IfStmt = 6
+		Number,				//0
+		Variable,			//1
+		ArithmeticOperation,//2
+		Assignment,			//3
+		Declaration,		//4
+		CodeBlock,			//5
+		IfStmt,				//6
+		Comparison			//7
 	};
 };
 		
@@ -98,7 +97,7 @@ namespace AstNodes
 		{}
 		virtual ~AstNode()
 		{}
-		virtual Code codeGen() = 0;
+		virtual std::string codeGen() = 0;
 		
 		NodeType::Type type()
 		{
@@ -161,7 +160,7 @@ namespace AstNodes
 			_val.ival = value;
 		}
 		
-		Code codeGen()
+		std::string codeGen()
 		{
 			std::stringstream stream;
 			switch(_numberType)
@@ -197,7 +196,7 @@ namespace AstNodes
 			
 		}
 		
-		Code codeGen()
+		std::string codeGen()
 		{
 			std::stringstream result;
 			result << "#" << symbols[_name];
@@ -224,7 +223,8 @@ namespace AstNodes
 			Div
 		};
 		
-		ArithmeticOperation(const std::string &op, AstNode *lValue, AstNode *rValue) : AstNode(NodeType::ArithmeticOperation), _lValue(lValue), _rValue(rValue), _operator(Unnknown)
+		ArithmeticOperation(const std::string &op, AstNode *lValue, AstNode *rValue)
+			: AstNode(NodeType::ArithmeticOperation), _lValue(lValue), _rValue(rValue), _operator(Unnknown)
 		{
 			if("+" == op)
 			{
@@ -246,7 +246,7 @@ namespace AstNodes
 		ArithmeticOperation(Operator op, AstNode *lValue, AstNode *rValue) : AstNode(NodeType::ArithmeticOperation), _lValue(lValue), _rValue(rValue), _operator(op)
 		{}
 		
-		Code codeGen()
+		std::string codeGen()
 		{
 			std::stringstream result;
 			
@@ -332,7 +332,7 @@ namespace AstNodes
 		{
 		}
 		
-		Code codeGen()
+		std::string codeGen()
 		{
 			//lValue must be variable
 			if(NodeType::Variable != _lValue->type())
@@ -377,7 +377,7 @@ namespace AstNodes
 		{
 		}
 		
-		Code codeGen()
+		std::string codeGen()
 		{
 			symbols.insert(_name, addr.next());
 			return "";
@@ -404,7 +404,7 @@ namespace AstNodes
 			*/
 		}
 		
-		Code codeGen()
+		std::string codeGen()
 		{
 			std::cout << "gen code for block\n";
 			
@@ -435,6 +435,94 @@ namespace AstNodes
 		
 	};
 	
+	class Comparison : public AstNode
+	{
+	public:
+		enum Operator
+		{
+			Unknown,
+			lt,
+			gt,
+			le,
+			ge,
+			eq,
+			ne
+		};
+		Comparison(const std::string &op, AstNode *lValue, AstNode *rValue)
+			: AstNode(NodeType::Comparison), _operator(Unknown), _lValue(lValue), _rValue(rValue)
+		{
+			if("<" == op)
+				_operator = lt;
+			else if(">" == op)
+				_operator = gt;
+			else if("<=" == op)
+				_operator = le;
+			else if(">=" == op)
+				_operator = ge;
+			else if("==" == op)
+				_operator = eq;
+			else if("!=" == op)
+				_operator = ne;
+		}
+		
+		std::string codeGen()
+		{
+			std::stringstream result;
+			
+			//expand lvalue
+			if(NodeType::Number == _lValue->type() || NodeType::Variable == _lValue->type())
+			{
+			}
+			else if(NodeType::ArithmeticOperation == _lValue->type())
+			{
+				result << _lValue->codeGen();
+				_lValue = elements.get();
+			}
+			else
+			{
+				std::cerr << "line:" << yylineno << ":\tincorrect node type\n";
+			}
+			//expand rvalue
+			if(NodeType::Number == _rValue->type() || NodeType::Variable == _rValue->type())
+			{
+			}
+			else if(NodeType::ArithmeticOperation == _rValue->type())
+			{
+				result << _rValue->codeGen();
+				_rValue = elements.get();
+			}
+			else
+			{
+				std::cerr << "line:" << yylineno << ":\tincorrect node type\n";
+			}
+			
+			result << "SUB " << _lValue->codeGen() << ',' << _rValue->codeGen() << ENDLINE
+					<< opAsmName() << ' ';
+			
+			return result.str();
+		}
+	private:
+		std::string opAsmName()
+		{
+			switch(_operator)
+			{
+			case lt: return "JNL";
+			case gt: return "JNG";
+			case le: return "JG";
+			case ge: return "JL";
+			case eq: return "JNZ";
+			case ne: return "JZ";
+			default:
+				std::cerr << "unnknown comparison operator\n";
+				exit(1);
+			}
+		}
+	
+		Operator _operator;
+		AstNode *_lValue;
+		AstNode *_rValue;
+	};
+	
 	class IfStmt : public AstNode
 	{
 	public:
@@ -459,7 +547,11 @@ namespace AstNodes
 				result << "SUB " << elements.get()->codeGen() << ",0" << ENDLINE;
 				result << "JZ label.e1" << ENDLINE;
 			}
-			else//TODO: add logical expresions
+			else if(NodeType::Comparison == _condition->type())
+			{
+				result << _condition->codeGen() << "label.e1" << ENDLINE;
+			}
+			else
 			{
 				std::cerr << "incorrect if condition\n";
 				exit(1);

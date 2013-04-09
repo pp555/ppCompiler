@@ -72,8 +72,17 @@ blok
 	|function_call						{}
 	;
 if_stmt
-	:IF '(' wyr ')' sub_block										{elements.add(new AstNodes::IfStmt(elements.get(), elements.get()));}
-	|IF '(' wyr ')' sub_block ELSE sub_block							{printf("if-else\n");}
+	:IF '(' condition ')' sub_block										{elements.add(new AstNodes::IfStmt(elements.get(), elements.get()));}
+	|IF '(' condition ')' sub_block ELSE sub_block							{printf("if-else\n");}
+	;
+condition
+	:wyr								{}
+	|wyr '<' wyr						{AstNodes::AstNode *rValue = elements.get();AstNodes::AstNode *lValue = elements.get();elements.add(new AstNodes::Comparison("<", lValue, rValue));}
+	|wyr '>' wyr						{AstNodes::AstNode *rValue = elements.get();AstNodes::AstNode *lValue = elements.get();elements.add(new AstNodes::Comparison(">", lValue, rValue));}
+	|wyr OP_LE wyr						{AstNodes::AstNode *rValue = elements.get();AstNodes::AstNode *lValue = elements.get();elements.add(new AstNodes::Comparison("<=", lValue, rValue));}
+	|wyr OP_GE wyr						{AstNodes::AstNode *rValue = elements.get();AstNodes::AstNode *lValue = elements.get();elements.add(new AstNodes::Comparison(">=", lValue, rValue));}
+	|wyr OP_COMPARE wyr					{AstNodes::AstNode *rValue = elements.get();AstNodes::AstNode *lValue = elements.get();elements.add(new AstNodes::Comparison("==", lValue, rValue));}
+	|wyr '!' '=' wyr					{AstNodes::AstNode *rValue = elements.get();AstNodes::AstNode *lValue = elements.get();elements.add(new AstNodes::Comparison("!=", lValue, rValue));}
 	;
 
 while_stmt
@@ -154,7 +163,7 @@ int main(int argc, char *argv[])
 		cout << "stack element:\t" << e->toString() << endl;
 		asmFile << e->codeGen();
 	}
-	//symbols.printSymbols();
+	symbols.printSymbols();
 
 	asmFile.close();
 	
