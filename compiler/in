@@ -1,11 +1,9 @@
-
+{
 int mojWynik;
 int b;
 int c;
 b = 3;
 c = 5;
-mojWynik=b+c*3;
+mojWynik=b+2*c+5;
 
-float d;
-d = mojWynik;
-
+}

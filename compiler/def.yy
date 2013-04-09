@@ -3,14 +3,12 @@
 #include <fstream>
 #include <string>
 
-#include "classes/element.h"
-#include "classes/identifier.h"
-#include "classes/number.h"
-#include "classes/compiler.h"
+//#include "classes/element.h"
+//#include "classes/identifier.h"
+//#include "classes/number.h"
+//#include "classes/compiler.h"
 
-FILE *npnfile;
-
-Compiler compiler;
+#include "classes/ast.hh"
 
 extern "C" int yylex();
 extern "C" int yyerror(const char *msg, ...);
@@ -60,13 +58,13 @@ float	fval;
 
 %%
 bloki
-	:blok							{printf("blok\n");fprintf(npnfile, "\n");}
-	|bloki blok						{printf("bloki\n");fprintf(npnfile, "\n");}
-	|sub_block
+	:blok							{printf("blok\n");}
+	|bloki blok						{printf("bloki\n");}
+	|sub_block						{}
 	;
 blok
 	:declaration ';'					{}
-	|assign ';'						{fprintf(npnfile, ";");}
+	|assign ';'						{}
 	|if_stmt							{}
 	|do_while_stmt						{}
 	|while_stmt						{}
@@ -74,8 +72,8 @@ blok
 	|function_call						{}
 	;
 if_stmt
-	:IF '(' wyr ')' control_body										{compiler.ifStmt();}
-	|IF '(' wyr ')' sub_block ELSE control_body							{printf("if-else\n");}
+	:IF '(' wyr ')' sub_block										{}
+	|IF '(' wyr ')' sub_block ELSE sub_block							{printf("if-else\n");}
 	;
 
 while_stmt
@@ -106,35 +104,33 @@ control_body
 	;
 
 sub_block
-	:'{' bloki '}'							{}
+	:'{' bloki '}'							{elements.add(new AstNodes::CodeBlock());}
 	;
 
 declaration
-	:TYPE_INT ID '=' wyr				{printf("int declaration and definition\n");}
-	|TYPE_FLOAT ID '=' wyr				{printf("float declaration and definition\n");}
-	|TYPE_INT ident						{printf("int declaration\n"); compiler.declaration(Number::NumInt);}
-	|TYPE_FLOAT ident						{printf("float declaration\n"); compiler.declaration(Number::NumFloat);}
+	:TYPE_INT ident						{printf("int declaration\n"); elements.add(new AstNodes::Declaration(NumInt, static_cast<AstNodes::Variable*>(elements.get())));}
+	|TYPE_FLOAT ident						{printf("float declaration\n"); elements.add(new AstNodes::Declaration(NumFloat, static_cast<AstNodes::Variable*>(elements.get())));}
 	;
 assign
-	:ident '=' wyr							{printf("przypisanie\n");fprintf(npnfile, "=");compiler.assignment();}
+	:ident '=' wyr							{printf("przypisanie\n");AstNodes::AstNode *rValue = elements.get();AstNodes::Variable *lValue = static_cast<AstNodes::Variable*>(elements.get());elements.add(new AstNodes::Assignment(lValue, rValue));}
 	;
 ident
-	:ID										{fprintf(npnfile, $1);fprintf(npnfile, " ");compiler.push(new Identifier($1));}
+	:ID										{elements.add(new AstNodes::Variable($1));}
 	;
 wyr
-	:wyr '+' skladnik						{printf("wyrazenie z + \n");fprintf(npnfile, "+");compiler.operatorFound("+");}
-	|wyr '-' skladnik						{printf("wyrazenie z - \n");fprintf(npnfile, "-");compiler.operatorFound("-");}
+	:wyr '+' skladnik						{printf("wyrazenie z + \n");elements.add(AstNodes::ArithmeticOperation::createFromStack("+"));}
+	|wyr '-' skladnik						{printf("wyrazenie z - \n");elements.add(AstNodes::ArithmeticOperation::createFromStack("-"));}
 	|skladnik								{printf("wyrazenie pojedyncze \n");}
 	;
 skladnik
-	:skladnik '*' czynnik					{printf("skladnik z * \n");fprintf(npnfile, "*");compiler.operatorFound("*");}
-	|skladnik '/' czynnik					{printf("skladnik z / \n");fprintf(npnfile, "/");compiler.operatorFound("/");}
+	:skladnik '*' czynnik					{printf("skladnik z * \n");elements.add(AstNodes::ArithmeticOperation::createFromStack("*"));}
+	|skladnik '/' czynnik					{printf("skladnik z / \n");elements.add(AstNodes::ArithmeticOperation::createFromStack("/"));}
 	|czynnik								{printf("skladnik pojedynczy \n");}
 	;
 czynnik
 	:ident								{printf("identyfikator\n");} 
-	|LC									{printf("czynnik liczbowy\n");fprintf(npnfile, "%d ", $1);compiler.push(new Number($1));}
-	|LR									{printf("czynnik liczbowy (f)\n");fprintf(npnfile, "%f ", $1);compiler.push(new Number($1));}
+	|LC									{printf("czynnik liczbowy\n");elements.add(new AstNodes::Number($1));}
+	|LR									{printf("czynnik liczbowy (f)\n");elements.add(new AstNodes::Number($1));}
 	|'(' wyr ')'							{printf("wyrazenie w nawiasach\n");}
 	;
 	
@@ -142,13 +138,24 @@ czynnik
 
 int main(int argc, char *argv[])
 {
-
-	npnfile = fopen("out.txt", "w");
 	yyparse();
-	fclose(npnfile);
 
-	compiler.checkStack();
-	compiler.printSymbols();
+	//compiler.checkStack();
+	
+	
+	std::ofstream asmFile("app.asm", ios::out);
+	
+	
+	while(!elements.isEmpty())
+	{
+		cout << "----------   stack element   ----------\n" << endl;
+		
+		AstNodes::AstNode *e = elements.get();
+		asmFile << e->codeGen();
+	}
+	symbols.printSymbols();
+
+	asmFile.close();
 
 	return 0;
 }

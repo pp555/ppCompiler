@@ -6,6 +6,8 @@
 #include <map>
 #include <iostream>
 #include <cstdlib>
+#include <stack>
+#include <list>
 
 #include "TempIdentifier.hh"
 #include "Address.hh"
@@ -14,7 +16,7 @@
 
 typedef std::string Code;//TODO: vectorof strings
 
-/*extern*/ int yylineno;//TODO
+extern int yylineno;//TODO
 
 enum NumberType
 {
@@ -29,13 +31,13 @@ public:
 	{
 	}
 
-	void insert(const std::string &name, int address)//TODO: add address in parameter/make addres in body
+	void insert(const std::string &name, int address)
 	{
 		std::pair<std::map<std::string, int>::iterator,bool> result = _symbols.insert(std::pair<std::string, int>(name, address));
 		
 		if(!result.second)//already existed
 		{
-			std::cerr << yylineno << ":\tsymbol redefinition:\t" << name << std::endl;
+			std::cerr << "line:" << yylineno << ":\tsymbol redefinition:\t" << name << std::endl;
 			exit(1);
 		}
 	}
@@ -44,10 +46,18 @@ public:
 	{
 		if(_symbols.find(name) == _symbols.end())
 		{
-			std::cerr << yylineno << ":\tundefined symbol:\t" << name << std::endl;
+			std::cerr << "line:" << yylineno << ":\tundefined symbol:\t" << name << std::endl;
 			exit(1);
 		}
 		return _symbols[name];
+	}
+	void printSymbols()
+	{
+		std::cout << "ident\tadres" << std::endl;
+		for(std::map<std::string, int>::iterator it = _symbols.begin(); it != _symbols.end(); ++it)
+		{
+			std::cout << it->first << "\t" << it->second << std::endl;
+		}
 	}
 	
 	
@@ -58,105 +68,96 @@ private:
 
 
 SymbolsMap symbols;
+
 TempIdentifier tempIdentifier;
 Address addr;
 
+class NodeType
+{
+public:
+	enum Type
+	{
+		Number,
+		Variable,
+		ArithmeticOperation,
+		Assignment,
+		Declaration,
+		CodeBlock
+	};
+};
+		
 namespace AstNodes
 {
 		
 	class AstNode
 	{
 	public:
-		AstNode()
+	
+		AstNode(NodeType::Type type) : _type(type)
 		{}
 		virtual ~AstNode()
 		{}
 		virtual Code codeGen() = 0;
-	};
-	
-	class ArithmeticOperation : public AstNode
-	{
-	public:
-		enum Operator
-		{
-			Unnknown,
-			Add,
-			Sub,
-			Mul,
-			Div
-		};
 		
-		ArithmeticOperation(const std::string &op, AstNode *lValue, AstNode *rValue) : _lValue(lValue), _rValue(rValue), _operator(Unnknown)
+		NodeType::Type type()
 		{
-			if("+" == op)
-			{
-				_operator = Add;
-			}
-			else if("-" == op)
-			{
-				_operator = Sub;
-			}
-			else if("*" == op)
-			{
-				_operator = Mul;
-			}
-			else if("/" == op)
-			{
-				_operator = Div;
-			}
-		}
-		ArithmeticOperation(Operator op, AstNode *lValue, AstNode *rValue) : _lValue(lValue), _rValue(rValue), _operator(op)
-		{}
-		
-		Code codeGen()
-		{
-			symbols.insert(tempIdentifier.next(), addr.next());//TODO: add type
-			std::stringstream result;
-			result << "MOV R1," << _lValue->codeGen() << std::endl
-				<< "MOV R2," << _rValue->codeGen() << std::endl
-				<< opAsmName() << " R1,R2" << std::endl
-				<< "MOV #" << symbols[tempIdentifier.current()] << ",R1" << std::endl;
-			
-			return result.str();
+			return _type;
 		}
 		
 	private:
-		std::string opAsmName()
-		{
-			switch(_operator)
-			{
-			case Add:
-				return "ADD";
-			case Sub:
-				return "SUB";
-			case Mul:
-				return "MUL";
-			case Div:
-				return "DIV";
-			default:
-				std::cerr << "unnknown arithmetic operator" << std::endl;
-				exit(1);
-			}
-		}
-	
-		Operator _operator;
-		AstNode *_lValue;
-		AstNode *_rValue;
+		NodeType::Type _type;
 	};
+}
+	
+
+class ElementsStack
+{
+public:
+	ElementsStack()
+	{}
+	
+	AstNodes::AstNode *get()
+	{
+		AstNodes::AstNode *node = _elements.top();
+		_elements.pop();
+		return node;
+	}
+	
+	void add(AstNodes::AstNode *node)
+	{
+		_elements.push(node);
+	}
+	
+	bool isEmpty()
+	{
+		return _elements.empty();
+	}
+private:
+	std::stack<AstNodes::AstNode*> _elements;//TODO
+	
+};
+
+ElementsStack elements;
+
+namespace AstNodes
+{
 	
 	class Number : public AstNode
 	{
 	public:
-		Number(double value) : _numberType(NumFloat)
+		Number(double value) : AstNode(NodeType::Number), _numberType(NumFloat)
 		{
+			std::cout << "float number\n";
 			_val.fval = value;
 		}
-		Number(float value) : _numberType(NumFloat)
+		Number(float value) : AstNode(NodeType::Number), _numberType(NumFloat)
 		{
+			std::cout << "float number\n";
 			_val.fval = value;
 		}
-		Number(int value) : _numberType(NumInt)
+		Number(int value) : AstNode(NodeType::Number), _numberType(NumInt)
 		{
+			std::cout << "int number\n";
 			_val.ival = value;
 		}
 		
@@ -191,7 +192,7 @@ namespace AstNodes
 	class Variable : public AstNode
 	{
 	public:
-		Variable(const std::string &name) : _name(name)
+		Variable(const std::string &name) : AstNode(NodeType::Variable), _name(name)
 		{
 			
 		}
@@ -202,22 +203,162 @@ namespace AstNodes
 			result << "#" << symbols[_name];
 			return result.str();;
 		}
+		
+		std::string name() const
+		{
+			return _name;
+		}
 	private:
 		std::string _name;
+	};
+	
+	class ArithmeticOperation : public AstNode
+	{
+	public:
+		enum Operator
+		{
+			Unnknown,
+			Add,
+			Sub,
+			Mul,
+			Div
+		};
+		
+		ArithmeticOperation(const std::string &op, AstNode *lValue, AstNode *rValue) : AstNode(NodeType::ArithmeticOperation), _lValue(lValue), _rValue(rValue), _operator(Unnknown)
+		{
+			if("+" == op)
+			{
+				_operator = Add;
+			}
+			else if("-" == op)
+			{
+				_operator = Sub;
+			}
+			else if("*" == op)
+			{
+				_operator = Mul;
+			}
+			else if("/" == op)
+			{
+				_operator = Div;
+			}
+		}
+		ArithmeticOperation(Operator op, AstNode *lValue, AstNode *rValue) : AstNode(NodeType::ArithmeticOperation), _lValue(lValue), _rValue(rValue), _operator(op)
+		{}
+		
+		Code codeGen()
+		{
+			std::stringstream result;
+			
+			//expand lvalue
+			if(NodeType::Number == _lValue->type() || NodeType::Variable == _lValue->type())
+			{
+			}
+			else if(NodeType::ArithmeticOperation == _lValue->type())
+			{
+				result << _lValue->codeGen();
+				_lValue = elements.get();
+			}
+			else
+			{
+				std::cerr << "line:" << yylineno << ":\tincorrect node type\n";
+			}
+			//expand rvalue
+			if(NodeType::Number == _rValue->type() || NodeType::Variable == _rValue->type())
+			{
+			}
+			else if(NodeType::ArithmeticOperation == _rValue->type())
+			{
+				result << _rValue->codeGen();
+				_rValue = elements.get();
+			}
+			else
+			{
+				std::cerr << "line:" << yylineno << ":\tincorrect node type\n";
+			}
+			
+			
+			addTempSymbol();
+			result << "MOV R1," << _lValue->codeGen() << std::endl
+				<< "MOV R2," << _rValue->codeGen() << std::endl
+				<< opAsmName() << " R1,R2" << std::endl
+				<< "MOV #" << symbols[tempIdentifier.current()] << ",R1" << std::endl;
+			
+			return result.str();
+		}
+		
+		void addTempSymbol()
+		{
+			symbols.insert(tempIdentifier.next(), addr.next());//TODO: add type
+			elements.add(new Variable(tempIdentifier.current()));
+		}
+		
+		static ArithmeticOperation *createFromStack(const std::string &op)
+		{
+			AstNode *rValue = elements.get();
+			AstNode *lValue = elements.get();
+			return new AstNodes::ArithmeticOperation(op, lValue, rValue);
+		}
+		
+	private:
+		std::string opAsmName()
+		{
+			switch(_operator)
+			{
+			case Add:
+				return "ADD";
+			case Sub:
+				return "SUB";
+			case Mul:
+				return "MUL";
+			case Div:
+				return "DIV";
+			default:
+				std::cerr << "line:" << yylineno << ":\tunnknown arithmetic operator" << std::endl;
+				exit(1);
+			}
+		}
+	
+		Operator _operator;
+		AstNode *_lValue;
+		AstNode *_rValue;
 	};
 	
 	
 	class Assignment : public AstNode
 	{
 	public:
-		Assignment(AstNode *lValue, AstNode *rValue) : _lValue(lValue), _rValue(rValue)
+		Assignment(AstNode *lValue, AstNode *rValue) : AstNode(NodeType::Assignment), _lValue(lValue), _rValue(rValue)
 		{
 		}
 		
 		Code codeGen()
 		{
-			//TODO: check lvalue (it must be variable)
-			return "MOV " + _lValue->codeGen() + "," + _rValue->codeGen() + ENDLINE;
+			//lValue must be variable
+			if(NodeType::Variable != _lValue->type())
+			{
+				std::cerr << "line:" << yylineno << ":\tassignment left value must be variable\n";
+				exit(1);
+			}
+			
+			//rValue can be: Number, Variable, ArithmeticOperation
+			if(NodeType::Number == _rValue->type() || NodeType::Variable == _rValue->type())
+			{
+				return "MOV " + _lValue->codeGen() + "," + _rValue->codeGen() + ENDLINE;
+			}
+			else if(NodeType::ArithmeticOperation == _rValue->type())
+			{
+				std::stringstream result;
+				result << _rValue->codeGen();
+				result << "MOV " + _lValue->codeGen() + "," + elements.get()->codeGen() + ENDLINE;
+				return result.str();
+			}
+			else
+			{
+				std::cerr << "line:" << yylineno << ":\tincorrect right side of assignment\n";
+				exit(1);
+			}
+			
 		}
 		
 	private:
@@ -228,19 +369,55 @@ namespace AstNodes
 	class Declaration : public AstNode
 	{
 	public:
-		Declaration(NumberType type, const std::string &name) : _type(type), _name(name)
+		Declaration(NumberType type, const std::string &name) : AstNode(NodeType::Declaration), _type(type), _name(name)
 		{}
+		
+		
+		Declaration(NumberType type, Variable *var) : AstNode(NodeType::Declaration), _type(type), _name(var->name())
+		{
+		}
 		
 		Code codeGen()
 		{
 			symbols.insert(_name, addr.next());
-			return "";//TODO: codeGen returning void, appending code to vector
+			return "";
 		}
 	private:
 		std::string _name;
 		NumberType _type;
 	};
+	
+	
+	class CodeBlock : public AstNode
+	{
+	public:
+		CodeBlock() : AstNode(NodeType::CodeBlock)
+		{
+			std::cout << "new code block in line " << yylineno << std::endl;
+			while(!elements.isEmpty())
+			{
+				AstNodes::AstNode *e = elements.get();
+				_blockContent.push_front(e);
+			}
+		}
+		
+		Code codeGen()
+		{
+			std::cout << ":gen code for block\n";
+			
+			std::stringstream result;
+			
+			for(std::list<AstNode*>::iterator it = _blockContent.begin(); it != _blockContent.end(); ++it)
+			{
+				result << (*it)->codeGen();
+			}
+			
+			return result.str();
+		}
+	private:
+		std::list<AstNode*> _blockContent;
+		
+	};
 }
-
 
 #endif //AST_HH
