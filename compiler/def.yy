@@ -145,28 +145,72 @@ int main(int argc, char *argv[])
 	//compiler.checkStack();
 	
 	
-	
-	
-	AstNodes::AstNode *root = elements.get();
-	std::string app = root->codeGen();
+	std::ofstream asmFile("app.asm.withlabels", ios::out);
 	
 	
 	while(!elements.isEmpty())
 	{
-		std::cerr << "stack is not empty after getting root element\n";
 		AstNodes::AstNode *e = elements.get();
 		cout << "stack element:\t" << e->toString() << endl;
-		std::cout << e->codeGen();
+		asmFile << e->codeGen();
 	}
 	//symbols.printSymbols();
-	
-	//TODO:replacing labels
-	app.replace(app.find("label.e1:"), 9, "line_no:");
-	app.replace(app.find("label.s1:"), 9, "line_no:");
 
-	std::ofstream asmFile("app.asm", ios::out);
-	asmFile << app;
 	asmFile.close();
+	
+	std::cout << "generated asm file with labels" << std::endl;
+	
+	
+	
+	std::ifstream inAsmFile("app.asm.withlabels", ios::in);
+	std::ofstream outAsmFile("app.asm", ios::out);
+	
+	std::map<std::string, int> labels;//label name, line number
+	std::string line;
+	int lineNo = 0;
+	while(!inAsmFile.eof())
+	{
+		getline(inAsmFile,line);
+		int colonPos = line.find(':');
+		if(colonPos != string::npos)//add to labels list
+		{
+			labels.insert(std::pair<std::string, int>(line.substr(0, colonPos), lineNo));
+		}
+		lineNo++;
+	}
+	
+	inAsmFile.clear();
+	inAsmFile.seekg(0, inAsmFile.beg);
+	while(true)
+	{
+		getline(inAsmFile,line);
+		
+		int colonPos = line.find(':');
+		if(colonPos != string::npos)//add to labels list
+		{
+			line = line.substr(colonPos + 1);
+		}
+		
+		for(std::map<std::string, int>::iterator it = labels.begin(); it != labels.end(); ++it)
+		{
+			int labelPos = line.find(it->first);
+			if(labelPos != string::npos)
+			{
+				std::stringstream intStream;
+				intStream << it->second;
+				line.replace(labelPos, it->first.size(), intStream.str());
+			}
+		}
+		
+		if(!inAsmFile.eof())
+			outAsmFile << line << std::endl;
+		else
+			break;
+	}
+	
+	
+	inAsmFile.close();
+	outAsmFile.close();
 
 	return 0;
 }
