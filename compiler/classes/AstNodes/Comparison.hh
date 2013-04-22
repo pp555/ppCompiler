@@ -71,12 +71,31 @@ namespace AstNodes
 				std::cerr << "incorrect node type\n";
 			}
 			
-			result << "MOV R1," << _lValue->codeGen() << ENDLINE;
-			result << "MOV R2," << _rValue->codeGen() << ENDLINE;
+			NumberType lType = _lValue->numType();
+			if(lType != _rValue->numType())
+			{
+				std::cerr << "type mismatch in comparison\n";
+				exit(1);
+			}
 			
-			
-			result << "SUB R1,R2" << ENDLINE
-					<< opAsmName() << ' ';
+			switch(lType)
+			{
+				case NumInt:
+					result << "MOV R1," << _lValue->codeGen() << ENDLINE
+						   << "MOV R2," << _rValue->codeGen() << ENDLINE
+						   << "SUB R1,R2" << ENDLINE
+						   << opAsmName() << ' ';
+					break;
+				case NumFloat:
+					result << "FMOV F1," << _lValue->codeGen() << ENDLINE
+						   << "FMOV F2," << _rValue->codeGen() << ENDLINE
+						   << "FSUB F1,F2" << ENDLINE
+						   << opAsmName() << ' ';
+					break;
+				default:
+					std::cerr << "none type in comparison\n";
+					exit(1);
+			}
 			
 			return result.str();
 		}
