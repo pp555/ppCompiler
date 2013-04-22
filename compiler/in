@@ -9,9 +9,13 @@
 	if(2*2 > 2*2-2)
 	{
 		b=0;
-	}
-	if(mojWynik != b)
-	{
-		c=1;
+		if(mojWynik != b)
+		{
+			b=1;
+		}
+		if(mojWynik != b)
+		{
+			c=2;
+		}
 	}
 }

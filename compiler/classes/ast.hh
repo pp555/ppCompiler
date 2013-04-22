@@ -8,6 +8,7 @@
 #include <cstdlib>
 #include <stack>
 #include <list>
+#include <vector>
 
 #include "TempIdentifier.hh"
 #include "Address.hh"
@@ -18,8 +19,40 @@ extern int yylineno;
 
 enum NumberType
 {
+	None,
 	NumInt,
 	NumFloat
+};
+
+class Symbol
+{
+public:
+	Symbol() : _type(None), _offset(-1)
+	{}
+	Symbol(NumberType type, int offset) : _type(type), _offset(offset)
+	{}
+//TODO: add constructor for arrays
+
+	int offset() const {return _offset;}
+	NumberType type() const
+	{
+		if(_type == None)
+		{
+			std::cerr << "none type detected while getting type of symbol";
+			exit(1);
+		}
+		return _type;
+	}
+
+	bool isArray()
+	{
+		return _size.size() > 0;
+	}
+
+private:
+	int _offset;
+	NumberType _type;
+	std::vector<int> _size;
 };
 
 class SymbolsMap
@@ -29,9 +62,9 @@ public:
 	{
 	}
 
-	void insert(const std::string &name, int address)
+	void insert(const std::string &name, NumberType type, int address)
 	{
-		std::pair<std::map<std::string, int>::iterator,bool> result = _symbols.insert(std::pair<std::string, int>(name, address));
+		std::pair<std::map<std::string, Symbol>::iterator,bool> result = _symbols.insert(std::pair<std::string, Symbol>(name, Symbol(type, address)));
 		
 		if(!result.second)//already existed
 		{
@@ -40,7 +73,7 @@ public:
 		}
 	}
 	
-	int operator[](const std::string &name)
+	Symbol operator[](const std::string &name)
 	{
 		if(_symbols.find(name) == _symbols.end())
 		{
@@ -51,17 +84,19 @@ public:
 	}
 	void printSymbols()
 	{
+/*
 		std::cout << "ident\tadres" << std::endl;
 		for(std::map<std::string, int>::iterator it = _symbols.begin(); it != _symbols.end(); ++it)
 		{
 			std::cout << it->first << "\t" << it->second << std::endl;
 		}
+*/
 	}
 	
 	
 
 private:
-	std::map<std::string, int> _symbols;
+	std::map<std::string, Symbol> _symbols;
 };
 
 
@@ -135,7 +170,7 @@ public:
 		return _elements.empty();
 	}
 private:
-	std::stack<AstNodes::AstNode*> _elements;//TODO
+	std::stack<AstNodes::AstNode*> _elements;
 	
 };
 
@@ -175,6 +210,8 @@ namespace AstNodes
 
 			return stream.str();
 		}
+
+		NumberType numType() const {return _numberType;}
 		
 	private:
 		
@@ -191,7 +228,7 @@ namespace AstNodes
 	class Variable : public AstNode
 	{
 	public:
-		Variable(const std::string &name) : AstNode(NodeType::Variable), _name(name)
+		Variable(const std::string &name) : AstNode(NodeType::Variable), _name(name), _numberType(None)
 		{
 			
 		}
@@ -199,8 +236,19 @@ namespace AstNodes
 		std::string codeGen()
 		{
 			std::stringstream result;
-			result << "#" << symbols[_name];
-			return result.str();;
+			result << "#" << symbols[_name].offset();
+			_numberType = symbols[_name].type();
+			return result.str();
+		}
+
+		NumberType numType() const
+		{
+			if(_numberType == None)
+			{
+				std::cerr << "none type detected while getting variable type";
+				exit(1);
+			}
+			return _numberType;
 		}
 		
 		std::string name() const
@@ -209,6 +257,7 @@ namespace AstNodes
 		}
 	private:
 		std::string _name;
+		NumberType _numberType;
 	};
 	
 	class ArithmeticOperation : public AstNode
@@ -249,6 +298,10 @@ namespace AstNodes
 		std::string codeGen()
 		{
 			std::stringstream result;
+
+			NumberType lType;//=lValue()->numType()
+			NumberType rType;
+
 			
 			//expand lvalue
 			if(NodeType::Number == _lValue->type() || NodeType::Variable == _lValue->type())
@@ -282,14 +335,14 @@ namespace AstNodes
 			result << "MOV R1," << _lValue->codeGen() << std::endl
 				<< "MOV R2," << _rValue->codeGen() << std::endl
 				<< opAsmName() << " R1,R2" << std::endl
-				<< "MOV #" << symbols[tempIdentifier.current()] << ",R1" << std::endl;
+				<< "MOV #" << symbols[tempIdentifier.current()].offset() << ",R1" << std::endl; //TODO: type
 			
 			return result.str();
 		}
 		
 		void addTempSymbol()
 		{
-			symbols.insert(tempIdentifier.next(), addr.next());//TODO: add type
+			symbols.insert(tempIdentifier.next(), NumInt, addr.next());//TODO: add FLOAT type
 			elements.add(new Variable(tempIdentifier.current()));
 		}
 		
@@ -379,7 +432,7 @@ namespace AstNodes
 		
 		std::string codeGen()
 		{
-			symbols.insert(_name, addr.next());
+			symbols.insert(_name, _type, addr.next());
 			return "";
 		}
 	private:

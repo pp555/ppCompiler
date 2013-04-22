@@ -181,12 +181,20 @@ int main(int argc, char *argv[])
 	{
 		getline(inAsmFile,line);
 		int colonPos = line.find(':');
-		if(colonPos != string::npos)//add to labels list
+		int labelStartPos = 0;
+		while(colonPos != string::npos)//add to labels list
 		{
-			labels.insert(std::pair<std::string, int>(line.substr(0, colonPos), lineNo));
+			labels.insert(std::pair<std::string, int>(line.substr(labelStartPos, colonPos - labelStartPos), lineNo));
+			labelStartPos = colonPos + 1;
+			colonPos = line.find(':', labelStartPos);
 		}
 		lineNo++;
 	}
+std::cout << "labels\n";
+		for(std::map<std::string, int>::iterator it = labels.begin(); it != labels.end(); ++it)
+		{
+			std::cout << it->first << "\t" << it->second << std::endl;
+		}
 	
 	inAsmFile.clear();
 	inAsmFile.seekg(0, inAsmFile.beg);
