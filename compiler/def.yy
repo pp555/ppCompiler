@@ -27,10 +27,6 @@ float	fval;
 %token <ival> LC
 %token <fval> LR
 
-%token <comment_oneline> COMMENT_ONELINE
-%token <comment_begin> COMMENT_BEGIN
-%token <comment_end> COMMENT_END
-
 %token <if> IF
 %token <else> ELSE
 %token <while> WHILE

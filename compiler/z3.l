@@ -10,9 +10,7 @@ int yyerror(const char *msg, ...);
 
 %}
 %%
-\/\/			{/*printf("komentarz\n");*/ return COMMENT_ONELINE;}
-\/\*			{/*printf("komentarz\n");*/ return COMMENT_BEGIN;}
-\*\/			{/*printf("koniec komentarza\n");*/ return COMMENT_END;}
+\/\/.*\n			{printf("flex:komentarz\n");}
 \=\=			{/*printf("operator==\n");*/return OP_COMPARE;}
 \+\+			{/*printf("operator++\n");*/return OP_INCREMENT;}
 \-\-			{/*printf("operator--\n");*/return OP_DECREMENT;}
