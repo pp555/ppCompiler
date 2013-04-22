@@ -82,13 +82,18 @@ public:
 		}
 		return _symbols[name];
 	}
+	
+	bool contains(const std::string &name) const
+	{
+		return _symbols.end() != _symbols.find(name);
+	}
+	
 	void printSymbols()
 	{
-
 		std::cout << "ident\tadres" << std::endl;
 		for(std::map<std::string, Symbol>::iterator it = _symbols.begin(); it != _symbols.end(); ++it)
 		{
-			std::cout << it->first << "\t" << it->second.offset() << std::endl;
+			std::cout << it->first << "\t" << it->second.offset() << "\t" << it->second.type() << std::endl;
 		}
 
 	}
@@ -141,6 +146,11 @@ namespace AstNodes
 		
 		virtual std::string toString(){return "AstNode";};
 		
+		virtual NumberType numType() const
+		{
+			std::cerr << "not a number\n";
+			exit(1);
+		}
 	private:
 		NodeType::Type _type;
 	};
@@ -228,9 +238,8 @@ namespace AstNodes
 	class Variable : public AstNode
 	{
 	public:
-		Variable(const std::string &name) : AstNode(NodeType::Variable), _name(name), _numberType(None)
+		Variable(const std::string &name, NumberType type = None) : AstNode(NodeType::Variable), _name(name), _numberType(type)
 		{
-			
 		}
 		
 		std::string codeGen()
@@ -245,6 +254,10 @@ namespace AstNodes
 		{
 			if(_numberType == None)
 			{
+				if(symbols.contains(_name))
+				{
+					return symbols[_name].type();
+				}
 				std::cerr << "none type detected while getting variable type";
 				exit(1);
 			}
@@ -299,8 +312,8 @@ namespace AstNodes
 		{
 			std::stringstream result;
 
-			NumberType lType;//=lValue()->numType()
-			NumberType rType;
+			NumberType lType = _lValue->numType();
+			NumberType rType = _rValue->numType();
 
 			
 			//expand lvalue
@@ -342,8 +355,9 @@ namespace AstNodes
 		
 		void addTempSymbol()
 		{
-			symbols.insert(tempIdentifier.next(), NumInt, addr.next());//TODO: add FLOAT type
-			elements.add(new Variable(tempIdentifier.current()));
+			NumberType tempType = this->numType();
+			symbols.insert(tempIdentifier.next(), tempType, addr.next());
+			elements.add(new Variable(tempIdentifier.current(), tempType));
 		}
 		
 		static ArithmeticOperation *createFromStack(const std::string &op)
@@ -351,6 +365,26 @@ namespace AstNodes
 			AstNode *rValue = elements.get();
 			AstNode *lValue = elements.get();
 			return new AstNodes::ArithmeticOperation(op, lValue, rValue);
+		}
+		
+		NumberType numType() const
+		{
+			NumberType lType = _lValue->numType();
+			NumberType rType = _rValue->numType();
+			if(lType == rType)
+			{
+				if(lType == None)
+				{
+					std::cerr << "none type detected while checking type in arithmetic operation\n";
+					exit(1);
+				}
+				return lType;
+			}
+			else
+			{
+				std::cerr << "type mismatch in operation, conversion not allowed\n";
+				exit(1);
+			}
 		}
 		
 	private:
@@ -391,6 +425,13 @@ namespace AstNodes
 			if(NodeType::Variable != _lValue->type())
 			{
 				std::cerr << "line:" << yylineno << ":\tassignment left value must be variable\n";
+				exit(1);
+			}
+			
+			//check number types
+			if(_lValue->numType() != _rValue->numType() || _lValue->numType() == None)
+			{
+				std::cerr << "type mismatch in assignment, conversion is not allowed\n";
 				exit(1);
 			}
 			
