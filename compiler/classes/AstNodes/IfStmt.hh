@@ -15,7 +15,7 @@ namespace AstNodes
 	class IfStmt : public AstNode
 	{
 	public:
-		IfStmt(AstNode *codeBlock, AstNode *condition) : AstNode(NodeType::IfStmt), _codeBlock(codeBlock), _condition(condition)
+		IfStmt(AstNode *codeBlock, AstNode *condition, AstNode *elseBlock = NULL) : AstNode(NodeType::IfStmt), _codeBlock(codeBlock), _condition(condition), _elseBlock(elseBlock)
 		{
 			//std::cout << "adding if stmt\n" << codeBlock->type() << "\t" << condition->type() << std::endl;
 		}
@@ -24,6 +24,7 @@ namespace AstNodes
 		{
 			label.next();
 			std::stringstream result;
+			
 			if(NodeType::Number == _condition->type() || NodeType::Variable == _condition->type())
 			{
 				//condition:!=0
@@ -51,13 +52,25 @@ namespace AstNodes
 				exit(1);
 			}
 			
-			result << "label.s" << label.current() << ":" << _codeBlock->codeGen() << "label.e" << label.current() << ":";
+			result << "label.s" << label.current() << ":" << _codeBlock->codeGen();
+			if(_elseBlock)
+			{
+				result << "JMP label.end" << label.current() << ENDLINE;
+			}
+			result << "label.e" << label.current() << ":";
+			
+			if(_elseBlock)
+			{
+				result << _elseBlock->codeGen() << "label.end" << label.current() << ":";
+			}
+			
 			return result.str();
 		}
 		
 	private:
 		AstNode *_codeBlock;
 		AstNode *_condition;
+		AstNode *_elseBlock;
 	};
 }
 
