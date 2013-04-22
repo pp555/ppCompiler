@@ -27,22 +27,37 @@ namespace AstNodes
 			}
 			
 			//check number types
-			if(_lValue->numType() != _rValue->numType() || _lValue->numType() == None)
+			NumberType lType = _lValue->numType();
+			if(lType != _rValue->numType())
 			{
 				std::cerr << "type mismatch in assignment, conversion is not allowed\n";
 				exit(1);
 			}
 			
+			std::string movAsmCmd;
+			switch(lType)
+			{
+				case NumInt:
+					movAsmCmd = "MOV";
+					break;
+				case NumFloat:
+					movAsmCmd = "FMOV";
+					break;
+				default:
+					std::cerr << "none type in assignment\n";
+					exit(1);
+			}
+			
 			//rValue can be: Number, Variable, ArithmeticOperation
 			if(NodeType::Number == _rValue->type() || NodeType::Variable == _rValue->type())
 			{
-				return "MOV " + _lValue->codeGen() + "," + _rValue->codeGen() + ENDLINE;
+				return movAsmCmd + ' ' + _lValue->codeGen() + "," + _rValue->codeGen() + ENDLINE;
 			}
 			else if(NodeType::ArithmeticOperation == _rValue->type())
 			{
 				std::stringstream result;
 				result << _rValue->codeGen();
-				result << "MOV " + _lValue->codeGen() + "," + elements.get()->codeGen() + ENDLINE;
+				result << movAsmCmd << ' ' + _lValue->codeGen() + "," + elements.get()->codeGen() + ENDLINE;
 				return result.str();
 			}
 			else
