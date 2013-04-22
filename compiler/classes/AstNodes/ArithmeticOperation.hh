@@ -52,9 +52,7 @@ namespace AstNodes
 		{
 			std::stringstream result;
 
-			NumberType lType = _lValue->numType();
-			NumberType rType = _rValue->numType();
-
+			NumberType lType = this->numType();
 			
 			//expand lvalue
 			if(NodeType::Number == _lValue->type() || NodeType::Variable == _lValue->type())
@@ -83,12 +81,27 @@ namespace AstNodes
 				std::cerr << "incorrect node type\n";
 			}
 			
-			
 			addTempSymbol();
-			result << "MOV R1," << _lValue->codeGen() << std::endl
-				<< "MOV R2," << _rValue->codeGen() << std::endl
-				<< opAsmName() << " R1,R2" << std::endl
-				<< "MOV #" << symbols[tempIdentifier.current()].offset() << ",R1" << std::endl; //TODO: type
+			
+			switch(lType)
+			{
+				case NumInt:
+					result << "MOV R1," << _lValue->codeGen() << ENDLINE
+						<< "MOV R2," << _rValue->codeGen() << ENDLINE
+						<< opAsmName() << " R1,R2" << ENDLINE
+						<< "MOV #" << symbols[tempIdentifier.current()].offset() << ",R1" << ENDLINE;
+					break;
+				case NumFloat:
+					result << "FMOV F1," << _lValue->codeGen() << ENDLINE
+						<< "FMOV F2," << _rValue->codeGen() << ENDLINE
+						<< 'F' << opAsmName() << " F1,F2" << ENDLINE
+						<< "FMOV #" << symbols[tempIdentifier.current()].offset() << ",F1" << ENDLINE;
+					break;
+				default:
+					std::cerr << "none type in arithmetic operation\n";
+					exit(1);
+			}
+			
 			
 			return result.str();
 		}
