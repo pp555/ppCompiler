@@ -3,11 +3,6 @@
 #include <fstream>
 #include <string>
 
-//#include "classes/element.h"
-//#include "classes/identifier.h"
-//#include "classes/number.h"
-//#include "classes/compiler.h"
-
 #include "classes/ast.hh"
 
 extern "C" int yylex();
