@@ -63,8 +63,8 @@ blok
 	|function_call						{}
 	;
 if_stmt
-	:IF '(' condition ')' sub_block										{elements.add(new AstNodes::IfStmt(elements.get(), elements.get()));}
-	|IF '(' condition ')' sub_block ELSE sub_block							{printf("if-else\n");}
+	:IF '(' condition ')' sub_block										{AstNodes::AstNode *body = elements.get();AstNodes::AstNode *cond = elements.get();elements.add(new AstNodes::IfStmt(body, cond));}
+	|IF '(' condition ')' sub_block ELSE sub_block						{AstNodes::AstNode *elseBody = elements.get();AstNodes::AstNode *body = elements.get();AstNodes::AstNode *cond = elements.get();elements.add(new AstNodes::IfStmt(body, cond, elseBody));}
 	;
 condition
 	:wyr								{}
