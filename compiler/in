@@ -5,6 +5,11 @@
 	b = 3;
 	c = 5;
 	mojWynik=b+2*c+5;
+	
+	float d;
+	d = 10.0;
+	float e;
+	e = 5.5 * d;
 
 	if(2*2 > 2*2-2)
 	{
