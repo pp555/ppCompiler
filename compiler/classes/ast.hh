@@ -84,13 +84,13 @@ public:
 	}
 	void printSymbols()
 	{
-/*
+
 		std::cout << "ident\tadres" << std::endl;
-		for(std::map<std::string, int>::iterator it = _symbols.begin(); it != _symbols.end(); ++it)
+		for(std::map<std::string, Symbol>::iterator it = _symbols.begin(); it != _symbols.end(); ++it)
 		{
-			std::cout << it->first << "\t" << it->second << std::endl;
+			std::cout << it->first << "\t" << it->second.offset() << std::endl;
 		}
-*/
+
 	}
 	
 	
@@ -549,7 +549,11 @@ namespace AstNodes
 				std::cerr << "line:" << yylineno << ":\tincorrect node type\n";
 			}
 			
-			result << "SUB " << _lValue->codeGen() << ',' << _rValue->codeGen() << ENDLINE
+			result << "MOV R1," << _lValue->codeGen() << ENDLINE;
+			result << "MOV R2," << _rValue->codeGen() << ENDLINE;
+			
+			
+			result << "SUB R1,R2" << ENDLINE
 					<< opAsmName() << ' ';
 			
 			return result.str();
