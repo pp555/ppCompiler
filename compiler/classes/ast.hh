@@ -21,6 +21,7 @@
 #include "AstNodes/CodeBlock.hh"
 #include "AstNodes/Comparison.hh"
 #include "AstNodes/IfStmt.hh"
+#include "AstNodes/ComplexCondition.hh"
 
 extern int yylineno;
 

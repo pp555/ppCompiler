@@ -41,6 +41,10 @@ namespace AstNodes
 			{
 				result << _condition->codeGen() << "label.e" << label.current() << ENDLINE;
 			}
+			else if(NodeType::ComplexCondition == _condition->type())
+			{
+				result << _condition->codeGen() << "label.e" << label.current() << ENDLINE;
+			}
 			else
 			{
 				std::cerr << "incorrect if condition\n";

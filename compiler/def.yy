@@ -64,7 +64,12 @@ blok
 	;
 if_stmt
 	:IF '(' condition ')' sub_block										{elements.add(new AstNodes::IfStmt(elements.get(), elements.get()));}
+	|IF '(' complex_condition ')' sub_block								{elements.add(new AstNodes::IfStmt(elements.get(), elements.get()));}
 	|IF '(' condition ')' sub_block ELSE sub_block							{printf("if-else\n");}
+	;
+complex_condition
+	:condition OP_AND condition			{AstNodes::AstNode *rValue = elements.get();AstNodes::AstNode *lValue = elements.get();elements.add(new AstNodes::ComplexCondition(AstNodes::ComplexCondition::And, lValue, rValue));}
+	|condition OP_OR condition			{AstNodes::AstNode *rValue = elements.get();AstNodes::AstNode *lValue = elements.get();elements.add(new AstNodes::ComplexCondition(AstNodes::ComplexCondition::Or, lValue, rValue));}
 	;
 condition
 	:wyr								{}

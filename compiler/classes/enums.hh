@@ -20,7 +20,8 @@ public:
 		Declaration,		//4
 		CodeBlock,			//5
 		IfStmt,				//6
-		Comparison			//7
+		Comparison,			//7
+		ComplexCondition	//8
 	};
 };
 
