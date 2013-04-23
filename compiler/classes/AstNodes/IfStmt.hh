@@ -44,7 +44,7 @@ namespace AstNodes
 			}
 			else if(NodeType::ComplexCondition == _condition->type())
 			{
-				result << _condition->codeGen() << "label.e" << label.current() << ENDLINE;
+				result << _condition->codeGen();
 			}
 			else
 			{

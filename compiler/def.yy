@@ -41,7 +41,6 @@ float	fval;
 %token <and> OP_AND
 %token <or> OP_OR
 
-//kolejnosc operatorow
 %left OP_COMPARE OP_LE OP_GE '<' '>'
 %left '+' '-'
 %left '*' '/'
@@ -70,7 +69,9 @@ if_stmt
 	;
 complex_condition
 	:condition OP_AND condition			{AstNodes::AstNode *rValue = elements.get();AstNodes::AstNode *lValue = elements.get();elements.add(new AstNodes::ComplexCondition(AstNodes::ComplexCondition::And, lValue, rValue));}
+	|condition OP_AND complex_condition	{AstNodes::AstNode *rValue = elements.get();AstNodes::AstNode *lValue = elements.get();elements.add(new AstNodes::ComplexCondition(AstNodes::ComplexCondition::And, lValue, rValue));}
 	|condition OP_OR condition			{AstNodes::AstNode *rValue = elements.get();AstNodes::AstNode *lValue = elements.get();elements.add(new AstNodes::ComplexCondition(AstNodes::ComplexCondition::Or, lValue, rValue));}
+	|condition OP_OR complex_condition	{AstNodes::AstNode *rValue = elements.get();AstNodes::AstNode *lValue = elements.get();elements.add(new AstNodes::ComplexCondition(AstNodes::ComplexCondition::Or, lValue, rValue));}
 	;
 condition
 	:wyr								{}

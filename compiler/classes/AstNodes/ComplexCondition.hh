@@ -66,6 +66,7 @@ namespace AstNodes
 			result << ENDLINE;
 			//gen condition 2 code
 			result << _rValue->codeGen();
+			result << "label.e" << label.current() << ENDLINE;
 			
 			return result.str();
 		}
@@ -73,7 +74,15 @@ namespace AstNodes
 		std::string genCodeForOr()
 		{
 			//TODO
-			return "Or operator unimplemented\n";
+			std::stringstream result;
+			//gen condition 1 code
+			result << _lValue->codeGen();
+			result << "label.2c" << label.current() << ENDLINE;//TODO: is label number ok?
+			result << "JMP " << "label.s" << label.current() << ENDLINE;
+			//gen condition 2 code
+			result << "label.2c" << label.current() << ":" << _rValue->codeGen();
+			result << "label.e" << label.current() << ENDLINE;
+			return result.str();
 		}
 		
 	};
