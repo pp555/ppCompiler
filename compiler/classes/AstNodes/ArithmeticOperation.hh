@@ -133,6 +133,11 @@ namespace AstNodes
 				}
 				return lType;
 			}
+			else if(lType == NumFloat || rType == NumInt)
+			{
+				std::cout << "warning: type mismatch in operation\n";
+				return NumFloat;
+			}
 			else
 			{
 				std::cerr << "type mismatch in operation, conversion not allowed\n";
