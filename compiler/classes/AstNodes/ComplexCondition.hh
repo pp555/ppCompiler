@@ -24,6 +24,7 @@ namespace AstNodes
 		
 		ComplexCondition(LogicOperator op, AstNode *lValue, AstNode *rValue) : _lValue(lValue), _rValue(rValue), _operator(op), AstNode(NodeType::ComplexCondition)
 		{
+			std::cout << "WARNING:\tusing complex condition this way is deprecated!\n";
 		}
 		
 		std::string codeGen()
@@ -90,6 +91,10 @@ namespace AstNodes
 		
 		std::string genCodeForOr()
 		{
+			std::cout << "WARNING:\tusing complex condition this way is deprecated!\n";
+			std::cout << "ERROR:\tor condition not implemented!\n";
+			exit(1);
+			
 			//TODO
 			std::stringstream result;
 			

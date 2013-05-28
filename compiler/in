@@ -1,16 +1,16 @@
 {
 	float wynik;
-	wynik = 100/15.0;
+	wynik = 100.0/15.0;
 	
 	bool a;
 	a=false;
 	
-	if(a)
+	if(wynik>0 && wynik < 10)
 	{
-		wynik=1;
+		wynik=1.0;
 	}
 	else
 	{
-		wynik=0;
+		wynik=0.0;
 	}
 }
