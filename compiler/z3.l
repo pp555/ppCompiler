@@ -12,8 +12,6 @@ int yyerror(const char *msg, ...);
 %%
 \/\/.*\n			{printf("flex:komentarz\n");}
 \=\=			{/*printf("operator==\n");*/return OP_COMPARE;}
-\+\+			{/*printf("operator++\n");*/return OP_INCREMENT;}
-\-\-			{/*printf("operator--\n");*/return OP_DECREMENT;}
 
 \<\=			{return OP_LE;}
 \>\=			{return OP_GE;}
@@ -54,6 +52,9 @@ do					{/*printf("do\n");*/return DO;}
 
 int					{/*printf("type:int\n");*/ return TYPE_INT;}
 float				{/*printf("type:float\n");*/ return TYPE_FLOAT;}
+bool				{/*printf("type:float\n");*/ return TYPE_BOOL;}
+true				{/*printf("type:float\n");*/ return BOOL_TRUE;}
+false				{/*printf("type:float\n");*/ return BOOL_FALSE;}
 
 [0-9][0-9]*\.[0-9]*		{yylval.fval = atof(yytext); return LR;}
 [0-9]+				{yylval.ival = atoi(yytext); return LC;}

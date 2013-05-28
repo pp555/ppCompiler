@@ -22,6 +22,7 @@
 #include "AstNodes/Comparison.hh"
 #include "AstNodes/IfStmt.hh"
 #include "AstNodes/ComplexCondition.hh"
+#include "AstNodes/BoolConstant.hh"
 
 extern int yylineno;
 

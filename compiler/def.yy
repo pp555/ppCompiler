@@ -24,6 +24,10 @@ float	fval;
 %token <itype> TYPE_INT
 %token <ftype> TYPE_FLOAT
 
+%token <btype> TYPE_BOOL
+%token <bool_true> BOOL_TRUE
+%token <bool_false> BOOL_FALSE
+
 %token <ival> LC
 %token <fval> LR
 
@@ -119,13 +123,21 @@ sub_block_begin : '{'									{printf("block begin\n");blocksStack.push(new AstN
 declaration
 	:TYPE_INT ident							{elements.add(new AstNodes::Declaration(NumInt, static_cast<AstNodes::Variable*>(elements.get())));}
 	|TYPE_FLOAT ident						{elements.add(new AstNodes::Declaration(NumFloat, static_cast<AstNodes::Variable*>(elements.get())));}
+	|TYPE_BOOL ident						{elements.add(new AstNodes::Declaration(TypeBool, static_cast<AstNodes::Variable*>(elements.get())));}
 	;
 assign
 	:ident '=' wyr							{AstNodes::AstNode *rValue = elements.get();AstNodes::Variable *lValue = static_cast<AstNodes::Variable*>(elements.get());elements.add(new AstNodes::Assignment(lValue, rValue));}
+	|ident '=' log_wyr						{AstNodes::AstNode *rValue = elements.get();AstNodes::Variable *lValue = static_cast<AstNodes::Variable*>(elements.get());elements.add(new AstNodes::Assignment(lValue, rValue));}
 	;
 ident
 	:ID										{elements.add(new AstNodes::Variable($1));}
 	;
+
+log_wyr
+	:BOOL_TRUE								{elements.add(new AstNodes::BoolConstant(true));}
+	|BOOL_FALSE								{elements.add(new AstNodes::BoolConstant(false));}
+	;
+
 wyr
 	:wyr '+' skladnik						{elements.add(AstNodes::ArithmeticOperation::createFromStack("+"));}
 	|wyr '-' skladnik						{elements.add(AstNodes::ArithmeticOperation::createFromStack("-"));}

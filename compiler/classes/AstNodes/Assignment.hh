@@ -26,6 +26,14 @@ namespace AstNodes
 				exit(1);
 			}
 			
+			if(NodeType::BoolConstant == _rValue->type())//bool type assignment
+			{
+				if(_lValue->numType() != TypeBool) {std::cerr << "tried to assign bool to non-bool variable\n";exit(1);}
+				
+				return "MOV " + _lValue->codeGen() + "," + _rValue->codeGen() + ENDLINE;
+			}
+			//otherwise its number type assignment
+			
 			//check number types
 			NumberType lType = _lValue->numType();
 			if(lType != _rValue->numType())

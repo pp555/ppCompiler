@@ -1,4 +1,7 @@
 {
 	float wynik;
 	wynik = 100/15.0;
+	
+	bool a;
+	a=true;
 }

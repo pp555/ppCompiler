@@ -5,7 +5,8 @@ enum NumberType
 {
 	None,
 	NumInt,
-	NumFloat
+	NumFloat,
+	TypeBool
 };
 
 class NodeType
@@ -21,7 +22,8 @@ public:
 		CodeBlock,			//5
 		IfStmt,				//6
 		Comparison,			//7
-		ComplexCondition	//8
+		ComplexCondition,	//8
+		BoolConstant		//9
 	};
 };
 
