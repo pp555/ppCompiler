@@ -27,8 +27,11 @@ namespace AstNodes
 			
 			std::stringstream result;
 			
-			if(NodeType::Number == _condition->type() || NodeType::Variable == _condition->type())
+			if(NodeType::Number == _condition->type()
+				|| NodeType::Variable == _condition->type()
+				|| NodeType::BoolConstant == _condition->type())
 			{
+				if(NodeType::BoolConstant != _condition->type() && _condition->numType() == NumFloat) {std::cerr << "cannot use float as condition\n";exit(1);}
 				//condition:!=0
 				result << "SUB " << _condition->codeGen()  << ",0" << ENDLINE;
 				result << "JZ label.e" << labelsStack.top() << ENDLINE;

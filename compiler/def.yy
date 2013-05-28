@@ -80,6 +80,7 @@ complex_condition
 	;
 condition
 	:wyr								{}
+	|log_wyr							{}
 	|wyr '<' wyr						{AstNodes::AstNode *rValue = elements.get();AstNodes::AstNode *lValue = elements.get();elements.add(new AstNodes::Comparison("<", lValue, rValue));}
 	|wyr '>' wyr						{AstNodes::AstNode *rValue = elements.get();AstNodes::AstNode *lValue = elements.get();elements.add(new AstNodes::Comparison(">", lValue, rValue));}
 	|wyr OP_LE wyr						{AstNodes::AstNode *rValue = elements.get();AstNodes::AstNode *lValue = elements.get();elements.add(new AstNodes::Comparison("<=", lValue, rValue));}

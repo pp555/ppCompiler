@@ -3,5 +3,14 @@
 	wynik = 100/15.0;
 	
 	bool a;
-	a=true;
+	a=false;
+	
+	if(a)
+	{
+		wynik=1;
+	}
+	else
+	{
+		wynik=0;
+	}
 }
