@@ -6,7 +6,11 @@
 	a=true;
 	
 	
-	a=false;
+	{
+		bool b;
+		b=false;
+		a=b;
+	}
 	
-	a = true && false;
+	//a = true && false;
 }

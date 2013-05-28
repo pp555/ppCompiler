@@ -66,6 +66,7 @@ blok
 	|while_stmt							{}
 	|for_stmt							{}
 	|function_call						{}
+	|sub_block							{}
 	;
 if_stmt
 	:IF '(' condition ')' sub_block										{AstNodes::AstNode *body = elements.get();AstNodes::AstNode *cond = elements.get();elements.add(new AstNodes::IfStmt(body, cond));}

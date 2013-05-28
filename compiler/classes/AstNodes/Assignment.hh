@@ -59,6 +59,9 @@ namespace AstNodes
 				case NumFloat:
 					movAsmCmd = "FMOV";
 					break;
+				case TypeBool:
+					movAsmCmd = "MOV";
+					break;
 				default:
 					std::cerr << "none type in assignment\n";
 					exit(1);
