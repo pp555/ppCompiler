@@ -8,7 +8,8 @@
 #include "../enums.hh"
 #include "AstNode.hh"
 
-extern TempIdentifier label;
+extern Address labels;
+extern std::stack<int> labelsStack;
 
 namespace AstNodes
 {
@@ -22,25 +23,26 @@ namespace AstNodes
 		
 		std::string codeGen()
 		{
-			label.next();
+			labelsStack.push(labels.next());
+			
 			std::stringstream result;
 			
 			if(NodeType::Number == _condition->type() || NodeType::Variable == _condition->type())
 			{
 				//condition:!=0
 				result << "SUB " << _condition->codeGen()  << ",0" << ENDLINE;
-				result << "JZ label.e" << label.current() << ENDLINE;
+				result << "JZ label.e" << labelsStack.top() << ENDLINE;
 			}
 			else if(NodeType::ArithmeticOperation == _condition->type())
 			{
 				result << _condition->codeGen();
 				//condition:!=0
 				result << "SUB " << elements.get()->codeGen() << ",0" << ENDLINE;
-				result << "JZ label.e" << label.current() << ENDLINE;
+				result << "JZ label.e" << labelsStack.top() << ENDLINE;
 			}
 			else if(NodeType::Comparison == _condition->type())
 			{
-				result << _condition->codeGen() << "label.e" << label.current() << ENDLINE;
+				result << _condition->codeGen() << "label.e" << labelsStack.top() << ENDLINE;
 			}
 			else if(NodeType::ComplexCondition == _condition->type())
 			{
@@ -52,17 +54,19 @@ namespace AstNodes
 				exit(1);
 			}
 			
-			result << "label.s" << label.current() << ":" << _codeBlock->codeGen();
+			result << "label.s" << labelsStack.top() << ":" << _codeBlock->codeGen();
 			if(_elseBlock)
 			{
-				result << "JMP label.end" << label.current() << ENDLINE;
+				result << "JMP label.end" << labelsStack.top() << ENDLINE;
 			}
-			result << "label.e" << label.current() << ":";
+			result << "label.e" << labelsStack.top() << ":";
 			
 			if(_elseBlock)
 			{
-				result << _elseBlock->codeGen() << "label.end" << label.current() << ":";
+				result << _elseBlock->codeGen() << "label.end" << labelsStack.top() << ":";
 			}
+			
+			labelsStack.pop();
 			
 			return result.str();
 		}

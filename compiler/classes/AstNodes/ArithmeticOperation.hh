@@ -133,7 +133,7 @@ namespace AstNodes
 				}
 				return lType;
 			}
-			else if(lType == NumFloat || rType == NumInt)
+			else if(lType == NumFloat || rType == NumFloat)
 			{
 				std::cout << "warning: type mismatch in operation\n";
 				return NumFloat;

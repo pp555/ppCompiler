@@ -30,8 +30,16 @@ namespace AstNodes
 			NumberType lType = _lValue->numType();
 			if(lType != _rValue->numType())
 			{
-				std::cerr << "type mismatch in assignment, conversion is not allowed\n";
-				exit(1);
+				if(lType == NumFloat)
+				{
+					std::cout << "warning: type mismatch in assignment\n";
+					lType = NumFloat;
+				}
+				else
+				{
+					std::cerr << "type mismatch in assignment, conversion is not allowed\n";
+					exit(1);
+				}
 			}
 			
 			std::string movAsmCmd;

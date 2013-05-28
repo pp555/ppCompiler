@@ -8,6 +8,8 @@
 #include "../enums.hh"
 #include "AstNode.hh"
 
+extern std::stack<int> labelsStack;
+
 namespace AstNodes
 {
 	class ComplexCondition : public AstNode
@@ -51,6 +53,9 @@ namespace AstNodes
 			//TODO
 			return result.str();
 		}
+		
+		AstNode *lValue() const {return _lValue;}
+		AstNode *rValue() const {return _rValue;}
 	
 	private:
 		AstNode *_lValue;
@@ -59,14 +64,26 @@ namespace AstNodes
 		
 		std::string genCodeForAnd()
 		{
+			if(_lValue->type() == NodeType::ComplexCondition || _rValue->type() == NodeType::ComplexCondition)
+			{
+				//std::cout << "TODO: nested complex condition\n";
+				//exit(1);
+			}
+			
+			int ifBlockEndLabel = labelsStack.top();
+			
 			std::stringstream result;
-			//gen condition 1 code
+			
+			//labelsStack.push(labels.next());
+			//labelsStack.pop();
+			
 			result << _lValue->codeGen();
-			result << "label.e" << label.current();//TODO: is label number ok?
-			result << ENDLINE;
-			//gen condition 2 code
+			if(_lValue->type() != NodeType::ComplexCondition)
+				result << "label.e" << ifBlockEndLabel << ENDLINE;
+			
 			result << _rValue->codeGen();
-			result << "label.e" << label.current() << ENDLINE;
+			if(_rValue->type() != NodeType::ComplexCondition)
+				result << "label.e" << ifBlockEndLabel << ENDLINE;
 			
 			return result.str();
 		}
@@ -75,6 +92,20 @@ namespace AstNodes
 		{
 			//TODO
 			std::stringstream result;
+			
+			
+			int ifBlockEndLabel = labelsStack.top();
+			
+			result << _lValue->codeGen();
+			//if(_lValue->type() != NodeType::ComplexCondition)
+			//	result << "label.e" << ifBlockEndLabel << ENDLINE;
+			
+			//result << _rValue->codeGen();
+			//if(_rValue->type() != NodeType::ComplexCondition)
+			//	result << "label.e" << ifBlockEndLabel << ENDLINE;
+			
+			
+			/*
 			//gen condition 1 code
 			result << _lValue->codeGen();
 			result << "label.2c" << label.current() << ENDLINE;//TODO: is label number ok?
@@ -82,6 +113,7 @@ namespace AstNodes
 			//gen condition 2 code
 			result << "label.2c" << label.current() << ":" << _rValue->codeGen();
 			result << "label.e" << label.current() << ENDLINE;
+			*/
 			return result.str();
 		}
 		

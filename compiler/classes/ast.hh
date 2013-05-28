@@ -29,7 +29,8 @@ SymbolsMap symbols;
 TempIdentifier tempIdentifier("%t");
 Address addr;
 ElementsStack elements;
-TempIdentifier label("");
 std::stack<AstNodes::CodeBlock *> blocksStack;
+std::stack<int> labelsStack;
+Address labels;
 
 #endif //AST_HH

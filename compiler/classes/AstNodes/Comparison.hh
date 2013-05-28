@@ -74,8 +74,15 @@ namespace AstNodes
 			NumberType lType = _lValue->numType();
 			if(lType != _rValue->numType())
 			{
-				std::cerr << "type mismatch in comparison\n";
-				exit(1);
+				if(lType == NumFloat || _rValue->numType() == NumFloat)
+				{
+					lType = NumFloat;
+				}
+				else
+				{
+					std::cerr << "type mismatch in comparison\n";
+					exit(1);
+				}
 			}
 			
 			switch(lType)
