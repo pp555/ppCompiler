@@ -9,8 +9,8 @@
 	{
 		bool b;
 		b=false;
-		a=b;
 	}
+	a=b;
 	
 	//a = true && false;
 }
