@@ -1,16 +1,12 @@
 {
-	float wynik;
-	wynik = 100.0/15.0;
+	//float wynik;
+	//wynik = 100.0/15.0;
 	
 	bool a;
+	a=true;
+	
+	
 	a=false;
 	
-	if(wynik>0 && wynik < 10)
-	{
-		wynik=1.0;
-	}
-	else
-	{
-		wynik=0.0;
-	}
+	a = true && false;
 }

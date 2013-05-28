@@ -46,6 +46,8 @@ float	fval;
 %token <or> OP_OR
 
 %left OP_COMPARE OP_LE OP_GE '<' '>'
+%left OP_OR
+%left OP_AND
 %left '+' '-'
 %left '*' '/'
 
@@ -67,10 +69,13 @@ blok
 	;
 if_stmt
 	:IF '(' condition ')' sub_block										{AstNodes::AstNode *body = elements.get();AstNodes::AstNode *cond = elements.get();elements.add(new AstNodes::IfStmt(body, cond));}
-	|IF '(' complex_condition ')' sub_block								{AstNodes::AstNode *body = elements.get();AstNodes::AstNode *cond = elements.get();elements.add(new AstNodes::IfStmt(body, cond));}
 	|IF '(' condition ')' sub_block ELSE sub_block						{AstNodes::AstNode *elseBody = elements.get();AstNodes::AstNode *body = elements.get();AstNodes::AstNode *cond = elements.get();elements.add(new AstNodes::IfStmt(body, cond, elseBody));}
+	/*
+	|IF '(' complex_condition ')' sub_block								{AstNodes::AstNode *body = elements.get();AstNodes::AstNode *cond = elements.get();elements.add(new AstNodes::IfStmt(body, cond));}
 	|IF '(' complex_condition ')' sub_block ELSE sub_block				{AstNodes::AstNode *elseBody = elements.get();AstNodes::AstNode *body = elements.get();AstNodes::AstNode *cond = elements.get();elements.add(new AstNodes::IfStmt(body, cond, elseBody));}
+	*/
 	;
+	/*
 complex_condition
 	:condition OP_AND condition			{AstNodes::AstNode *rValue = elements.get();AstNodes::AstNode *lValue = elements.get();elements.add(new AstNodes::ComplexCondition(AstNodes::ComplexCondition::And, lValue, rValue));}
 	|condition OP_AND complex_condition	{AstNodes::AstNode *rValue = elements.get();AstNodes::AstNode *lValue = elements.get();elements.add(new AstNodes::ComplexCondition(AstNodes::ComplexCondition::And, lValue, rValue));}
@@ -78,6 +83,7 @@ complex_condition
 	|condition OP_OR complex_condition	{AstNodes::AstNode *rValue = elements.get();AstNodes::AstNode *lValue = elements.get();elements.add(new AstNodes::ComplexCondition(AstNodes::ComplexCondition::Or, lValue, rValue));}
 	|'(' complex_condition ')'			{std::cout << "cc1\n";}
 	;
+	*/
 condition
 	:wyr								{}
 	|log_wyr							{}
@@ -134,10 +140,24 @@ ident
 	:ID										{elements.add(new AstNodes::Variable($1));}
 	;
 
+
 log_wyr
+	:log_wyr OP_OR log_skladnik				{elements.add(AstNodes::LogicOperation::createFromStack(AstNodes::LogicOperation::Or));}
+	|log_skladnik
+	;
+	
+log_skladnik
+	:log_skladnik OP_AND log_czynnik		{elements.add(AstNodes::LogicOperation::createFromStack(AstNodes::LogicOperation::And));}
+	|log_czynnik							{}
+	;
+	
+log_czynnik
+	/*ident*/
 	:BOOL_TRUE								{elements.add(new AstNodes::BoolConstant(true));}
 	|BOOL_FALSE								{elements.add(new AstNodes::BoolConstant(false));}
+	|'(' log_wyr ')'						{}
 	;
+	
 
 wyr
 	:wyr '+' skladnik						{elements.add(AstNodes::ArithmeticOperation::createFromStack("+"));}

@@ -23,7 +23,8 @@ public:
 		IfStmt,				//6
 		Comparison,			//7
 		ComplexCondition,	//8
-		BoolConstant		//9
+		BoolConstant,		//9
+		LogicOperation		//10
 	};
 };
 
