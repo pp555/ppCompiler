@@ -30,7 +30,14 @@ namespace AstNodes
 			{
 				if(_lValue->numType() != TypeBool) {std::cerr << "tried to assign bool to non-bool variable\n";exit(1);}
 				
-				return "MOV " + _lValue->codeGen() + "," + _rValue->codeGen() + ENDLINE;
+				if(NodeType::BoolConstant == _rValue->type())
+					return "MOV " + _lValue->codeGen() + "," + _rValue->codeGen() + ENDLINE;
+					
+				//NodeType::LogicOperation == _rValue->type()
+				std::stringstream result;
+				result << _rValue->codeGen();
+				result << "MOV" << ' ' + _lValue->codeGen() + "," + elements.get()->codeGen() + ENDLINE;
+				return result.str();
 			}
 			//otherwise its number type assignment
 			

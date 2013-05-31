@@ -1,16 +1,5 @@
 {
-	//float wynik;
-	//wynik = 100.0/15.0;
-	
 	bool a;
-	a=true;
 	
-	
-	{
-		bool b;
-		b=false;
-	}
-	a=b;
-	
-	//a = true && false;
+	a = false && true;
 }

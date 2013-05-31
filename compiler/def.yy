@@ -223,11 +223,12 @@ int main(int argc, char *argv[])
 		}
 		lineNo++;
 	}
-std::cout << "labels\n";
-		for(std::map<std::string, int>::iterator it = labels.begin(); it != labels.end(); ++it)
-		{
-			std::cout << it->first << "\t" << it->second << std::endl;
-		}
+	
+	std::cout << "labels in ASM:\n";
+	for(std::map<std::string, int>::iterator it = labels.begin(); it != labels.end(); ++it)
+	{
+		std::cout << it->first << "\t" << it->second << std::endl;
+	}
 	
 	inAsmFile.clear();
 	inAsmFile.seekg(0, inAsmFile.beg);
