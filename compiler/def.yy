@@ -88,7 +88,10 @@ complex_condition
 condition
 	:wyr								{}
 	|log_wyr							{}
-	|wyr '<' wyr						{AstNodes::AstNode *rValue = elements.get();AstNodes::AstNode *lValue = elements.get();elements.add(new AstNodes::Comparison("<", lValue, rValue));}
+	;
+	
+comparison
+	:wyr '<' wyr						{AstNodes::AstNode *rValue = elements.get();AstNodes::AstNode *lValue = elements.get();elements.add(new AstNodes::Comparison("<", lValue, rValue));}
 	|wyr '>' wyr						{AstNodes::AstNode *rValue = elements.get();AstNodes::AstNode *lValue = elements.get();elements.add(new AstNodes::Comparison(">", lValue, rValue));}
 	|wyr OP_LE wyr						{AstNodes::AstNode *rValue = elements.get();AstNodes::AstNode *lValue = elements.get();elements.add(new AstNodes::Comparison("<=", lValue, rValue));}
 	|wyr OP_GE wyr						{AstNodes::AstNode *rValue = elements.get();AstNodes::AstNode *lValue = elements.get();elements.add(new AstNodes::Comparison(">=", lValue, rValue));}
@@ -97,13 +100,13 @@ condition
 	;
 
 while_stmt
-	:WHILE '(' wyr ')' control_body									{printf("while\n");}
+	:WHILE '(' wyr ')' sub_block									{printf("while\n");}
 	;
 for_stmt
-	:FOR '(' declaration ';' wyr ';' wyr ')' control_body					{printf("for\n");}
+	:FOR '(' declaration ';' wyr ';' wyr ')' sub_block					{printf("for\n");}
 	;
 do_while_stmt
-	:DO control_body WHILE ';'				{}
+	:DO sub_block WHILE ';'				{}
 	;
 
 function_call
@@ -116,11 +119,6 @@ arguments
 	;
 argument
 	:wyr									{printf("argument\n");}
-	;
-
-control_body
-	:blok								{}
-	|sub_block							{}
 	;
 
 sub_block
@@ -157,6 +155,7 @@ log_czynnik
 	:BOOL_TRUE								{elements.add(new AstNodes::BoolConstant(true));}
 	|BOOL_FALSE								{elements.add(new AstNodes::BoolConstant(false));}
 	|'(' log_wyr ')'						{}
+	|comparison								{}
 	;
 	
 

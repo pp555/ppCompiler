@@ -71,19 +71,19 @@ namespace AstNodes
 				case NodeType::BoolConstant:
 					result << "ADD 0," << _lValue->codeGen() << ENDLINE
 						<< "JZ " << "andFalse" << labelsStack.top() << ENDLINE;
-					 
 					break;
-				case NodeType::Comparison: //TODO
+				case NodeType::Comparison:
+					result << _lValue->codeGen() << "andFalse" << labelsStack.top() << ENDLINE;
+					break;
 				case NodeType::LogicOperation:
-					std::cout << "TODO: AstNodes::LogicOperation in lValue of op\n";
-					exit(0); 
+					result << _lValue->codeGen();
+					result << "ADD " << elements.get()->codeGen() << ",0" << ENDLINE
+						<< "JZ " << "andFalse" << labelsStack.top() << ENDLINE;
 					break;
 				default:
 					std::cerr << "wrong node type in left side of logic operation\n";
 					exit(1);
 			}
-			
-			
 			
 			//condition 2:
 			switch(_rValue->type())
@@ -91,19 +91,19 @@ namespace AstNodes
 				case NodeType::BoolConstant:
 					result << "ADD 0," << _rValue->codeGen() << ENDLINE
 						<< "JZ " << "andFalse" << labelsStack.top() << ENDLINE;
-					 
 					break;
-				case NodeType::Comparison: //TODO
+				case NodeType::Comparison:
+					result << _rValue->codeGen() << "andFalse" << labelsStack.top() << ENDLINE;
+					break;
 				case NodeType::LogicOperation:
-					std::cout << "TODO: AstNodes::LogicOperation in lValue of op\n";
-					exit(0); 
+					result << _rValue->codeGen();
+					result << "ADD " << elements.get()->codeGen() << ",0" << ENDLINE
+						<< "JZ " << "andFalse" << labelsStack.top() << ENDLINE;
 					break;
 				default:
 					std::cerr << "wrong node type in left side of logic operation\n";
 					exit(1);
 			}
-			
-			
 			
 			//result:
 			addTempSymbol();

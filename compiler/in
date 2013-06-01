@@ -1,5 +1,16 @@
 {
+	int wynik;
 	bool a;
 	
-	a = false && true;
+	a = (true && false) && (true && true);
+	
+	
+	if((true && (2+2>0)) && (true && true))
+	{
+		wynik=1;
+	}
+	else
+	{
+		wynik=2;
+	}
 }

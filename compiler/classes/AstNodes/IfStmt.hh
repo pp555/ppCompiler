@@ -47,10 +47,19 @@ namespace AstNodes
 			{
 				result << _condition->codeGen() << "label.e" << labelsStack.top() << ENDLINE;
 			}
+			else if(NodeType::LogicOperation == _condition->type())
+			{
+				result << _condition->codeGen();
+				result << "SUB " << elements.get()->codeGen() << ",0" << ENDLINE;
+				result << "JZ label.e" << labelsStack.top() << ENDLINE;
+			}
+			
+			/*
 			else if(NodeType::ComplexCondition == _condition->type())
 			{
 				result << _condition->codeGen();
 			}
+			*/
 			else
 			{
 				std::cerr << "incorrect if condition\n";
