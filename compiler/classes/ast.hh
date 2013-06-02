@@ -24,6 +24,7 @@
 #include "AstNodes/ComplexCondition.hh"
 #include "AstNodes/BoolConstant.hh"
 #include "AstNodes/LogicOperation.hh"
+#include "AstNodes/Array.hh"
 
 extern int yylineno;
 

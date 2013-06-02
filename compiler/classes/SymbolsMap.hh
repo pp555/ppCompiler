@@ -24,6 +24,17 @@ public:
 		}
 	}
 	
+	void insertArray(const std::string &name, NumberType type, int address, const std::vector<int> &size)
+	{
+		std::pair<std::map<std::string, Symbol>::iterator,bool> result = _symbols.insert(std::pair<std::string, Symbol>(name, Symbol(type, address, size)));
+		
+		if(!result.second)//already existed
+		{
+			std::cerr << "symbol redefinition:\t" << name << std::endl;
+			exit(1);
+		}
+	}
+	
 	Symbol operator[](const std::string &name)
 	{
 		if(_symbols.find(name) == _symbols.end())
@@ -41,10 +52,10 @@ public:
 	
 	void printSymbols()
 	{
-		std::cout << "ident\tadres" << std::endl;
+		std::cout << "ident\tadres\ttype\tisArr" << std::endl;
 		for(std::map<std::string, Symbol>::iterator it = _symbols.begin(); it != _symbols.end(); ++it)
 		{
-			std::cout << it->first << "\t" << it->second.offset() << "\t" << it->second.type() << std::endl;
+			std::cout << it->first << "\t" << it->second.offset() << "\t" << it->second.type() << "\t" << it->second.isArray() << std::endl;
 		}
 
 	}

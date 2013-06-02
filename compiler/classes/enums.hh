@@ -24,7 +24,9 @@ public:
 		Comparison,			//7
 		ComplexCondition,	//8
 		BoolConstant,		//9
-		LogicOperation		//10
+		LogicOperation,		//10
+		ArrayDeclaration,	//11
+		Indexer				//12
 	};
 };
 

@@ -12,14 +12,24 @@ public:
 	{}
 	int next()
 	{
-		return ++i;
+		++i;
+		curr = i;
+		return curr;
+	}
+	int next(int size)
+	{
+		++i;
+		curr = i;
+		i += size - 1;
+		return curr;
 	}
 	int current() const
 	{
-		return i;
+		return curr;
 	}
 private:
 	int i;
+	int curr;
 };
 
 #endif

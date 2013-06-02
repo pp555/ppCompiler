@@ -1,16 +1,8 @@
 {
-	int wynik;
-	bool a;
+	int a;
+	a=0;
 	
-	a = (true && true) && (true && true);
+	int tab[4][3][2];
 	
-	
-	if((true && (2+2>0)) && (true && a))
-	{
-		wynik=1;
-	}
-	else
-	{
-		wynik=2;
-	}
+	int b;
 }
