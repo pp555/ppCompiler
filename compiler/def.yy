@@ -100,7 +100,7 @@ comparison
 	;
 
 while_stmt
-	:WHILE '(' wyr ')' sub_block									{printf("while\n");}
+	:WHILE '(' condition ')' sub_block									{AstNodes::AstNode *body = elements.get();AstNodes::AstNode *cond = elements.get();elements.add(new AstNodes::WhileStmt(body, cond));}
 	;
 for_stmt
 	:FOR '(' declaration ';' wyr ';' wyr ')' sub_block					{printf("for\n");}

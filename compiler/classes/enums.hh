@@ -28,7 +28,9 @@ public:
 		ArrayDeclaration,	//11
 		Indexer,			//12
 		ArrayVariable,		//13
-		PreparedCode		//14	
+		PreparedCode,		//14
+		WhileStmt,			//15
+		ForStmt,			//16
 	};
 };
 
