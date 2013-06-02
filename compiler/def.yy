@@ -151,10 +151,10 @@ log_skladnik
 	;
 	
 log_czynnik
-	/*ident*/
 	:BOOL_TRUE								{elements.add(new AstNodes::BoolConstant(true));}
 	|BOOL_FALSE								{elements.add(new AstNodes::BoolConstant(false));}
 	|'(' log_wyr ')'						{}
+	|ident									{}
 	|comparison								{}
 	;
 	

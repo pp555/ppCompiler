@@ -2,10 +2,10 @@
 	int wynik;
 	bool a;
 	
-	a = (true && false) && (true && true);
+	a = (true && true) && (true && true);
 	
 	
-	if((true && (2+2>0)) && (true && true))
+	if((true && (2+2>0)) && (true && a))
 	{
 		wynik=1;
 	}

@@ -80,8 +80,21 @@ namespace AstNodes
 					result << "ADD " << elements.get()->codeGen() << ",0" << ENDLINE
 						<< "JZ " << "andFalse" << labelsStack.top() << ENDLINE;
 					break;
+				case NodeType::Variable:
+					switch(_lValue->numType())
+					{
+						case TypeBool:
+						case NumInt:
+							result << "SUB " << _lValue->codeGen()  << ",0" << ENDLINE
+								<< "JZ " << "andFalse" << labelsStack.top() << ENDLINE;
+							break;
+						default:
+							std::cerr << "wrong variable type in logic operation";
+							exit(1);
+					}
+					break;
 				default:
-					std::cerr << "wrong node type in left side of logic operation\n";
+					std::cerr << "wrong node type in left side of logic operation:" << _lValue->type() << "\n";
 					exit(1);
 			}
 			
@@ -100,8 +113,21 @@ namespace AstNodes
 					result << "ADD " << elements.get()->codeGen() << ",0" << ENDLINE
 						<< "JZ " << "andFalse" << labelsStack.top() << ENDLINE;
 					break;
+				case NodeType::Variable:
+					switch(_rValue->numType())
+					{
+						case TypeBool:
+						case NumInt:
+							result << "SUB " << _rValue->codeGen()  << ",0" << ENDLINE
+								<< "JZ " << "andFalse" << labelsStack.top() << ENDLINE;
+							break;
+						default:
+							std::cerr << "wrong variable type in logic operation";
+							exit(1);
+					}
+					break;
 				default:
-					std::cerr << "wrong node type in left side of logic operation\n";
+					std::cerr << "wrong node type in right side of logic operation:" << _rValue->type() << "\n";
 					exit(1);
 			}
 			
