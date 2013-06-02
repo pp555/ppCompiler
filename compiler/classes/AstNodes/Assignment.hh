@@ -7,6 +7,7 @@
 
 #include "../enums.hh"
 #include "AstNode.hh"
+#include "Array.hh"
 
 namespace AstNodes
 {
@@ -19,11 +20,27 @@ namespace AstNodes
 		
 		std::string codeGen()
 		{
+			std::stringstream result;
 			//lValue must be variable
 			if(NodeType::Variable != _lValue->type())
 			{
-				std::cerr << "assignment left value must be variable\n";
-				exit(1);
+				if(NodeType::ArrayVariable == _lValue->type())
+				{
+					std::cout << "TODO:arr var in assgn\n";
+					
+					//ArrayVariable *l = static_cast<ArrayVariable*>(_lValue);
+					//std::cout << "TODO\n";
+					//std::cout << l->name() << "\n";
+					
+					result << _lValue->codeGen();
+					_lValue = new PreparedCode("@R7", _lValue->numType());
+					
+				}
+				else
+				{
+					std::cerr << "assignment left value must be variable\n";
+					exit(1);
+				}
 			}
 			
 			if(NodeType::BoolConstant == _rValue->type() || NodeType::LogicOperation == _rValue->type())//bool type assignment
@@ -31,10 +48,12 @@ namespace AstNodes
 				if(_lValue->numType() != TypeBool) {std::cerr << "tried to assign bool to non-bool variable\n";exit(1);}
 				
 				if(NodeType::BoolConstant == _rValue->type())
-					return "MOV " + _lValue->codeGen() + "," + _rValue->codeGen() + ENDLINE;
+				{
+					result << "MOV " + _lValue->codeGen() + "," + _rValue->codeGen() + ENDLINE;
+					return result.str();
+				}
 					
 				//NodeType::LogicOperation == _rValue->type()
-				std::stringstream result;
 				result << _rValue->codeGen();
 				result << "MOV" << ' ' + _lValue->codeGen() + "," + elements.get()->codeGen() + ENDLINE;
 				return result.str();
@@ -45,6 +64,11 @@ namespace AstNodes
 			NumberType lType = _lValue->numType();
 			if(lType != _rValue->numType())
 			{
+				if(lType == None)
+				{
+					std::cerr << "not a number (type: None)\n";
+					exit(1);
+				}
 				if(lType == NumFloat)
 				{
 					std::cout << "warning: type mismatch in assignment\n";
@@ -77,11 +101,11 @@ namespace AstNodes
 			//rValue can be: Number, Variable, ArithmeticOperation
 			if(NodeType::Number == _rValue->type() || NodeType::Variable == _rValue->type())
 			{
-				return movAsmCmd + ' ' + _lValue->codeGen() + "," + _rValue->codeGen() + ENDLINE;
+				result << movAsmCmd + ' ' + _lValue->codeGen() + "," + _rValue->codeGen() + ENDLINE;
+				return result.str();
 			}
 			else if(NodeType::ArithmeticOperation == _rValue->type())
 			{
-				std::stringstream result;
 				result << _rValue->codeGen();
 				result << movAsmCmd << ' ' + _lValue->codeGen() + "," + elements.get()->codeGen() + ENDLINE;
 				return result.str();

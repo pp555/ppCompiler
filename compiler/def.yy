@@ -127,16 +127,19 @@ sub_block
 sub_block_begin : '{'									{printf("block begin\n");blocksStack.push(new AstNodes::CodeBlock());};
 
 declaration
-	:TYPE_INT ident							{elements.add(new AstNodes::Declaration(NumInt, static_cast<AstNodes::Variable*>(elements.get())));}
+	:array_decl								{std::cout << "array decl\n";}
+	|TYPE_INT ident							{printf("int decl\n"); elements.add(new AstNodes::Declaration(NumInt, static_cast<AstNodes::Variable*>(elements.get())));}
 	|TYPE_FLOAT ident						{elements.add(new AstNodes::Declaration(NumFloat, static_cast<AstNodes::Variable*>(elements.get())));}
 	|TYPE_BOOL ident						{elements.add(new AstNodes::Declaration(TypeBool, static_cast<AstNodes::Variable*>(elements.get())));}
 	;
+
 assign
 	:ident '=' wyr							{AstNodes::AstNode *rValue = elements.get();AstNodes::Variable *lValue = static_cast<AstNodes::Variable*>(elements.get());elements.add(new AstNodes::Assignment(lValue, rValue));}
+	|array_ident '=' wyr					{AstNodes::AstNode *rValue = elements.get();AstNodes::AstNode *lValue = elements.get();elements.add(new AstNodes::Assignment(lValue, rValue));}
 	|ident '=' log_wyr						{AstNodes::AstNode *rValue = elements.get();AstNodes::Variable *lValue = static_cast<AstNodes::Variable*>(elements.get());elements.add(new AstNodes::Assignment(lValue, rValue));}
 	;
 ident
-	:ID										{elements.add(new AstNodes::Variable($1));}
+	:ID										{printf("ident:\t%s\n", $1);elements.add(new AstNodes::Variable($1));}
 	;
 
 
@@ -174,6 +177,27 @@ czynnik
 	|LC									{elements.add(new AstNodes::Number($1));}
 	|LR									{elements.add(new AstNodes::Number($1));}
 	|'(' wyr ')'							{}
+	;
+
+array_decl
+	:TYPE_INT ident indexers_list			{elements.add(new AstNodes::ArrayDeclaration(NumInt));}
+	/*
+	|TYPE_FLOAT ident indexers_list			{elements.add(new AstNodes::Declaration(NumFloat, static_cast<AstNodes::Variable*>(elements.get())));}
+	|TYPE_BOOL ident indexers_list			{elements.add(new AstNodes::Declaration(TypeBool, static_cast<AstNodes::Variable*>(elements.get())));}
+	*/
+	;
+
+array_ident
+	:ident indexers_list					{elements.add(new AstNodes::ArrayVariable());}
+	;
+
+indexers_list
+	:indexers_list indexer					{}
+	|indexer								{}
+	;
+
+indexer
+	:'[' LC ']'								{elements.add(new AstNodes::Indexer($2));}
 	;
 	
 %%
