@@ -26,7 +26,7 @@ namespace AstNodes
 		
 		virtual NumberType numType() const
 		{
-			std::cerr << "not a number\n";
+			std::cerr << "not a number\tnode type:\t" << _type << "\n";
 			exit(1);
 		}
 	private:

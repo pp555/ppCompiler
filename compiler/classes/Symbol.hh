@@ -13,7 +13,9 @@ public:
 	{}
 	Symbol(NumberType type, int offset) : _type(type), _offset(offset)
 	{}
-//TODO: add constructor for arrays
+	
+	Symbol(NumberType type, int offset, const std::vector<int> &size) : _type(type), _offset(offset), _size(size)
+	{}
 
 	int offset() const {return _offset;}
 	NumberType type() const
@@ -30,7 +32,12 @@ public:
 	{
 		return _size.size() > 0;
 	}
-
+	
+	std::vector<int> size() const
+	{
+		return _size;
+	}
+	
 private:
 	int _offset;
 	NumberType _type;

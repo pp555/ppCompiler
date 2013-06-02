@@ -12,6 +12,7 @@
 
 #define ENDLINE "\n"
 
+#include "AstNodes/PreparedCode.hh"
 #include "AstNodes/AstNode.hh"
 #include "AstNodes/Number.hh"
 #include "AstNodes/Variable.hh"
@@ -24,6 +25,7 @@
 #include "AstNodes/ComplexCondition.hh"
 #include "AstNodes/BoolConstant.hh"
 #include "AstNodes/LogicOperation.hh"
+#include "AstNodes/Array.hh"
 
 extern int yylineno;
 
