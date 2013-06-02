@@ -135,6 +135,7 @@ declaration
 
 assign
 	:ident '=' wyr							{AstNodes::AstNode *rValue = elements.get();AstNodes::Variable *lValue = static_cast<AstNodes::Variable*>(elements.get());elements.add(new AstNodes::Assignment(lValue, rValue));}
+	|array_ident '=' wyr					{AstNodes::AstNode *rValue = elements.get();AstNodes::AstNode *lValue = elements.get();elements.add(new AstNodes::Assignment(lValue, rValue));}
 	|ident '=' log_wyr						{AstNodes::AstNode *rValue = elements.get();AstNodes::Variable *lValue = static_cast<AstNodes::Variable*>(elements.get());elements.add(new AstNodes::Assignment(lValue, rValue));}
 	;
 ident
@@ -184,6 +185,10 @@ array_decl
 	|TYPE_FLOAT ident indexers_list			{elements.add(new AstNodes::Declaration(NumFloat, static_cast<AstNodes::Variable*>(elements.get())));}
 	|TYPE_BOOL ident indexers_list			{elements.add(new AstNodes::Declaration(TypeBool, static_cast<AstNodes::Variable*>(elements.get())));}
 	*/
+	;
+
+array_ident
+	:ident indexers_list					{elements.add(new AstNodes::ArrayVariable());}
 	;
 
 indexers_list

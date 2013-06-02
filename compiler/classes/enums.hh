@@ -26,7 +26,9 @@ public:
 		BoolConstant,		//9
 		LogicOperation,		//10
 		ArrayDeclaration,	//11
-		Indexer				//12
+		Indexer,			//12
+		ArrayVariable,		//13
+		PreparedCode		//14	
 	};
 };
 

@@ -32,7 +32,12 @@ public:
 	{
 		return _size.size() > 0;
 	}
-
+	
+	std::vector<int> size() const
+	{
+		return _size;
+	}
+	
 private:
 	int _offset;
 	NumberType _type;

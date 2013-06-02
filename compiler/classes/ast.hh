@@ -12,6 +12,7 @@
 
 #define ENDLINE "\n"
 
+#include "AstNodes/PreparedCode.hh"
 #include "AstNodes/AstNode.hh"
 #include "AstNodes/Number.hh"
 #include "AstNodes/Variable.hh"
