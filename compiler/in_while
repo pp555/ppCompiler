@@ -1,0 +1,16 @@
+{
+	int i;
+	i = 0;
+	int tab[10];
+	while(i < 10)
+	{
+		tab[i] = i;
+		int e;
+		e = tab[i];
+		i = e + 1;
+	}
+	int a;
+	a = 100;
+	i = 5;
+	
+}

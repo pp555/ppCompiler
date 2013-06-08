@@ -16,13 +16,31 @@ namespace AstNodes
 	public:
 		Indexer(int value) : AstNode(NodeType::Indexer), _value(value)
 		{}
-		std::string codeGen() {return "";}
+		Indexer(AstNode *n) : AstNode(NodeType::Indexer), _value(-1), _valueNode(n)
+		{}
 		int get() const
 		{
+			if(_value < 0)
+			{
+				std::cerr << "index cannot be lower than 0\n";
+				exit(1);
+			}
 			return _value;
+		}
+		
+		std::string codeGen()
+		{
+			if(_value == -1)
+			{
+				return _valueNode->codeGen();
+			}
+			std::stringstream vS;
+			vS << _value;
+			return vS.str();
 		}
 	private:
 		int _value;
+		AstNode *_valueNode;
 		
 	};
 	
@@ -88,7 +106,7 @@ namespace AstNodes
 				if(indexerOrName->type() == NodeType::Indexer)
 				{
 					std::cout << "indexer found\n";
-					_indexes.push_back(static_cast<AstNodes::Indexer*>(indexerOrName)->get());
+					_indexes.push_back(static_cast<AstNodes::Indexer*>(indexerOrName));
 				}
 				else
 				{
@@ -107,7 +125,7 @@ namespace AstNodes
 			
 			if(!symbols[_name].isArray())
 			{
-				std::cerr << "indexes used with non-array variable\n";
+				std::cerr << "indexes used with non-array variable\tname: " << _name << "\n";
 				exit(1);
 			}
 			
@@ -118,7 +136,7 @@ namespace AstNodes
 			int dim = size.size();
 			
 			for(int i=0;i<dim;i++)
-				result << "MOV R" << i << "," << _indexes[i] << ENDLINE;
+				result << "MOV R" << i << "," << _indexes[i]->codeGen() << ENDLINE;
 			for(int i=1;i<dim;i++)
 			{
 				int s=size[i-1];
@@ -157,7 +175,7 @@ namespace AstNodes
 	private:
 		std::string _name;
 		NumberType _numberType;
-		std::vector<int> _indexes;
+		std::vector<AstNodes::Indexer*> _indexes;
 	};
 	
 	

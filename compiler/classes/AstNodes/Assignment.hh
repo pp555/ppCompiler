@@ -28,10 +28,6 @@ namespace AstNodes
 				{
 					std::cout << "TODO:arr var in assgn\n";
 					
-					//ArrayVariable *l = static_cast<ArrayVariable*>(_lValue);
-					//std::cout << "TODO\n";
-					//std::cout << l->name() << "\n";
-					
 					result << _lValue->codeGen();
 					_lValue = new PreparedCode("@R7", _lValue->numType());
 					
@@ -108,6 +104,12 @@ namespace AstNodes
 			{
 				result << _rValue->codeGen();
 				result << movAsmCmd << ' ' + _lValue->codeGen() + "," + elements.get()->codeGen() + ENDLINE;
+				return result.str();
+			}
+			else if(NodeType::ArrayVariable == _rValue->type())
+			{
+				result << _rValue->codeGen();
+				result << movAsmCmd << ' ' + _lValue->codeGen() + "," + "@R7" + ENDLINE;
 				return result.str();
 			}
 			else

@@ -62,11 +62,10 @@ blok
 	:declaration ';'					{blocksStack.top()->addStmt(elements.get());}
 	|assign ';'							{blocksStack.top()->addStmt(elements.get());}
 	|if_stmt							{blocksStack.top()->addStmt(elements.get());}
-	|do_while_stmt						{}
-	|while_stmt							{}
-	|for_stmt							{}
-	|function_call						{}
-	|sub_block							{}
+	|while_stmt							{blocksStack.top()->addStmt(elements.get());}
+	|for_stmt							{blocksStack.top()->addStmt(elements.get());}
+	|function_call						{blocksStack.top()->addStmt(elements.get());}
+	|sub_block							{blocksStack.top()->addStmt(elements.get());}
 	;
 if_stmt
 	:IF '(' condition ')' sub_block										{AstNodes::AstNode *body = elements.get();AstNodes::AstNode *cond = elements.get();elements.add(new AstNodes::IfStmt(body, cond));}
@@ -103,11 +102,22 @@ while_stmt
 	:WHILE '(' condition ')' sub_block									{AstNodes::AstNode *body = elements.get();AstNodes::AstNode *cond = elements.get();elements.add(new AstNodes::WhileStmt(body, cond));}
 	;
 for_stmt
-	:FOR '(' declaration ';' wyr ';' wyr ')' sub_block					{printf("for\n");}
+	:FOR '(' for_init ';' for_cond ';' for_after ')' sub_block					{AstNodes::AstNode *body = elements.get();AstNodes::AstNode *after = elements.get();AstNodes::AstNode *cond = elements.get();AstNodes::AstNode *init = elements.get();elements.add(new AstNodes::ForStmt(body, init, cond, after));}
 	;
-do_while_stmt
-	:DO sub_block WHILE ';'				{}
+for_init
+	/*:for_init ',' assign	{}
+	|*/
+	:assign					{}
 	;
+for_cond
+	:condition				{}
+	;
+for_after
+	/*:for_init ',' assign	{}
+	|*/
+	:assign					{}
+	;
+
 
 function_call
 	:ID '(' arguments ')' ';'				{printf("funkcja z argumentami\n");}
@@ -137,6 +147,7 @@ assign
 	:ident '=' wyr							{AstNodes::AstNode *rValue = elements.get();AstNodes::Variable *lValue = static_cast<AstNodes::Variable*>(elements.get());elements.add(new AstNodes::Assignment(lValue, rValue));}
 	|array_ident '=' wyr					{AstNodes::AstNode *rValue = elements.get();AstNodes::AstNode *lValue = elements.get();elements.add(new AstNodes::Assignment(lValue, rValue));}
 	|ident '=' log_wyr						{AstNodes::AstNode *rValue = elements.get();AstNodes::Variable *lValue = static_cast<AstNodes::Variable*>(elements.get());elements.add(new AstNodes::Assignment(lValue, rValue));}
+	|ident '=' array_ident					{AstNodes::AstNode *rValue = elements.get();AstNodes::Variable *lValue = static_cast<AstNodes::Variable*>(elements.get());elements.add(new AstNodes::Assignment(lValue, rValue));}
 	;
 ident
 	:ID										{printf("ident:\t%s\n", $1);elements.add(new AstNodes::Variable($1));}
@@ -179,8 +190,10 @@ czynnik
 	|'(' wyr ')'							{}
 	;
 
+
+// arrays
 array_decl
-	:TYPE_INT ident indexers_list			{elements.add(new AstNodes::ArrayDeclaration(NumInt));}
+	:TYPE_INT ident indexers_list_const			{elements.add(new AstNodes::ArrayDeclaration(NumInt));}
 	/*
 	|TYPE_FLOAT ident indexers_list			{elements.add(new AstNodes::Declaration(NumFloat, static_cast<AstNodes::Variable*>(elements.get())));}
 	|TYPE_BOOL ident indexers_list			{elements.add(new AstNodes::Declaration(TypeBool, static_cast<AstNodes::Variable*>(elements.get())));}
@@ -191,13 +204,21 @@ array_ident
 	:ident indexers_list					{elements.add(new AstNodes::ArrayVariable());}
 	;
 
-indexers_list
-	:indexers_list indexer					{}
-	|indexer								{}
+indexers_list_const
+	:indexers_list_const indexer_const		{}
+	|indexer_const							{}
 	;
-
-indexer
+indexer_const
 	:'[' LC ']'								{elements.add(new AstNodes::Indexer($2));}
+	;
+	
+indexers_list
+	:indexers_list indexer				{}
+	|indexer							{}
+	;
+indexer
+	:indexer_const						{}
+	|'[' ident ']'						{elements.add(new AstNodes::Indexer(elements.get()));}
 	;
 	
 %%
