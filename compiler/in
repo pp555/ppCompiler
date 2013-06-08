@@ -1,12 +1,13 @@
+int f()
 {
-	int i;
-	int b;
-	
-	int a[10];
-	for(i=0;i<10;i=i+1)
-	{
-		a[i] = 10-i;
-	}
-	b= 100;
-	
+	int x;
+	x = 9999;
 }
+
+
+int i;
+
+f();
+i=0;
+
+

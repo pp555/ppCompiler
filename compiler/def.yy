@@ -53,6 +53,11 @@ float	fval;
 
 
 %%
+program
+	:functions_defs	bloki			{}
+	|bloki							{}
+	;
+	
 bloki
 	:blok							{}
 	|bloki blok						{}
@@ -119,17 +124,6 @@ for_after
 	;
 
 
-function_call
-	:ID '(' arguments ')' ';'				{printf("funkcja z argumentami\n");}
-	|ID '(' ')' ';'						{printf("funkcja bez argumentow\n");}
-	;
-arguments
-	:argument								{}
-	|argument ',' arguments					{}
-	;
-argument
-	:wyr									{printf("argument\n");}
-	;
 
 sub_block
 	: sub_block_begin bloki '}'							{printf("block end\n");elements.add(blocksStack.top());blocksStack.pop();}
@@ -137,8 +131,8 @@ sub_block
 sub_block_begin : '{'									{printf("block begin\n");blocksStack.push(new AstNodes::CodeBlock());};
 
 declaration
-	:array_decl								{std::cout << "array decl\n";}
-	|TYPE_INT ident							{printf("int decl\n"); elements.add(new AstNodes::Declaration(NumInt, static_cast<AstNodes::Variable*>(elements.get())));}
+	:array_decl								{}
+	|TYPE_INT ident							{elements.add(new AstNodes::Declaration(NumInt, static_cast<AstNodes::Variable*>(elements.get())));}
 	|TYPE_FLOAT ident						{elements.add(new AstNodes::Declaration(NumFloat, static_cast<AstNodes::Variable*>(elements.get())));}
 	|TYPE_BOOL ident						{elements.add(new AstNodes::Declaration(TypeBool, static_cast<AstNodes::Variable*>(elements.get())));}
 	;
@@ -150,7 +144,7 @@ assign
 	|ident '=' array_ident					{AstNodes::AstNode *rValue = elements.get();AstNodes::Variable *lValue = static_cast<AstNodes::Variable*>(elements.get());elements.add(new AstNodes::Assignment(lValue, rValue));}
 	;
 ident
-	:ID										{printf("ident:\t%s\n", $1);elements.add(new AstNodes::Variable($1));}
+	:ID										{elements.add(new AstNodes::Variable($1));}
 	;
 
 
@@ -221,18 +215,45 @@ indexer
 	|'[' ident ']'						{elements.add(new AstNodes::Indexer(elements.get()));}
 	;
 	
+// functions
+functions_defs
+	:TYPE_INT ident '(' ')'	sub_block				{functions.push_back(new Function(elements.get(), elements.get()));}
+	;
+	
+function_call
+	:ID '(' arguments ')' ';'				{/*printf("TODO:funkcja z argumentami\n");elements.add(new AstNodes::FunctionCall($1));*/}
+	|ID '(' ')' ';'						{printf("funkcja bez argumentow:%s\n", $1);elements.add(new AstNodes::FunctionCall($1));}
+	;
+arguments
+	:argument								{}
+	|argument ',' arguments					{}
+	;
+argument
+	:wyr									{printf("argument\n");}
+	;
 %%
 
 int main(int argc, char *argv[])
 {
 	blocksStack.push(new AstNodes::CodeBlock());
 	yyparse();
-
+	elements.add(blocksStack.top());
+	blocksStack.pop();
+	
 	//compiler.checkStack();
 	
 	
 	std::ofstream asmFile("app.asm.withlabels", ios::out);
 	
+	if(!functions.empty())
+	{
+		asmFile << "JMP mainstart" << ENDLINE;
+		for(int i=0;i<functions.size();++i)
+		{
+			asmFile << functions.at(i)->codeGen();
+		}
+		asmFile << "mainstart:";
+	}
 	
 	while(!elements.isEmpty())
 	{

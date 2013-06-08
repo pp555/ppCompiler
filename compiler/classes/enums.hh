@@ -30,7 +30,8 @@ public:
 		ArrayVariable,		//13
 		PreparedCode,		//14
 		WhileStmt,			//15
-		ForStmt				//16
+		ForStmt,				//16
+		FunctionCall			//17
 	};
 };
 
