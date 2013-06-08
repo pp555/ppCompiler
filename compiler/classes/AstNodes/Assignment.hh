@@ -8,6 +8,7 @@
 #include "../enums.hh"
 #include "AstNode.hh"
 #include "Array.hh"
+#include "Functions.hh"
 
 namespace AstNodes
 {
@@ -110,6 +111,13 @@ namespace AstNodes
 			{
 				result << _rValue->codeGen();
 				result << movAsmCmd << ' ' + _lValue->codeGen() + "," + "@R7" + ENDLINE;
+				return result.str();
+			}
+			else if(NodeType::FunctionCall == _rValue->type())
+			{
+				result << _rValue->codeGen();
+				result << movAsmCmd << ' ' + _lValue->codeGen() + ",";
+				result << "#" << symbols["$" + static_cast<AstNodes::FunctionCall*>(_rValue)->name() + ".%retValue"].offset() << ENDLINE;
 				return result.str();
 			}
 			else

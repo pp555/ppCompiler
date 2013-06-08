@@ -69,7 +69,7 @@ blok
 	|if_stmt							{blocksStack.top()->addStmt(elements.get());}
 	|while_stmt							{blocksStack.top()->addStmt(elements.get());}
 	|for_stmt							{blocksStack.top()->addStmt(elements.get());}
-	|function_call						{blocksStack.top()->addStmt(elements.get());}
+	|function_call ';'					{blocksStack.top()->addStmt(elements.get());}
 	|sub_block							{blocksStack.top()->addStmt(elements.get());}
 	;
 if_stmt
@@ -142,6 +142,7 @@ assign
 	|array_ident '=' wyr					{AstNodes::AstNode *rValue = elements.get();AstNodes::AstNode *lValue = elements.get();elements.add(new AstNodes::Assignment(lValue, rValue));}
 	|ident '=' log_wyr						{AstNodes::AstNode *rValue = elements.get();AstNodes::Variable *lValue = static_cast<AstNodes::Variable*>(elements.get());elements.add(new AstNodes::Assignment(lValue, rValue));}
 	|ident '=' array_ident					{AstNodes::AstNode *rValue = elements.get();AstNodes::Variable *lValue = static_cast<AstNodes::Variable*>(elements.get());elements.add(new AstNodes::Assignment(lValue, rValue));}
+	|ident '=' function_call					{AstNodes::AstNode *rValue = elements.get();AstNodes::Variable *lValue = static_cast<AstNodes::Variable*>(elements.get());elements.add(new AstNodes::Assignment(lValue, rValue));}
 	;
 ident
 	:ID										{elements.add(new AstNodes::Variable($1));}
@@ -221,15 +222,15 @@ functions_defs
 	;
 	
 function_call
-	:ID '(' arguments ')' ';'				{/*printf("TODO:funkcja z argumentami\n");elements.add(new AstNodes::FunctionCall($1));*/}
-	|ID '(' ')' ';'						{printf("funkcja bez argumentow:%s\n", $1);elements.add(new AstNodes::FunctionCall($1));}
+	:ID '(' arguments ')'				{printf("TODO:funkcja z argumentami\n");elements.add(new AstNodes::FunctionCall($1));}
+	|ID '(' ')'							{printf("funkcja bez argumentow:%s\n", $1);elements.add(new AstNodes::FunctionCall($1));}
 	;
 arguments
 	:argument								{}
 	|argument ',' arguments					{}
 	;
 argument
-	:wyr									{printf("argument\n");}
+	:wyr									{Function::args.push_back(elements.get());}
 	;
 %%
 
