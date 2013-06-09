@@ -35,7 +35,7 @@ namespace AstNodes
 				{
 					return symbols[_name].type();
 				}
-				std::cerr << "none type detected while getting variable type (undeclared variable)";
+				std::cerr << "none type detected while getting variable type (undeclared variable):\t" << _name << '\n';
 				exit(1);
 			}
 			return _numberType;

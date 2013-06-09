@@ -44,6 +44,7 @@ int yyerror(const char *msg, ...);
 \?			{return '?';}
 \:			{return ':';}
 
+return				{return RETURN;}
 if					{/*printf("if\n");*/return IF;}
 else					{/*printf("else\n");*/return ELSE;}
 while				{/*printf("while\n");*/return WHILE;}

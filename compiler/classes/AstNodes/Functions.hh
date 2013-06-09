@@ -31,6 +31,9 @@ public:
 		}
 		
 		Function::args.clear();
+		
+		_returnVariable = retVar;
+		retVar = NULL;
 	}
 	
 	std::string codeGen()
@@ -39,10 +42,6 @@ public:
 		
 		result << "function." << _name << ":"; 
 		
-		//add temp symbol name.%returnline 
-		symbols.insert("$" + _name + ".%returnline", NumInt, addr.next());
-		AstNodes::Variable *returnLineVar = new AstNodes::Variable("$" + _name + ".%returnline", NumInt);
-		result << "POP " << returnLineVar->codeGen() << ENDLINE;
 		
 		//pop arguments
 		for(int i=0;i<arguments.size();++i)
@@ -52,6 +51,18 @@ public:
 		
 		
 		result << _codeBlock->codeGen();
+		if(_returnVariable)
+		{
+			result << "MOV #" << symbols["$" + _name + ".%retValue"].offset() << ',' << _returnVariable->codeGen() << ENDLINE;
+		}
+		//add temp symbol name.%returnline
+		std::stringstream returnLineSymbol;
+		returnLineSymbol << "$" << _name << ".%returnline" << addr.next();
+		
+		symbols.insert(returnLineSymbol.str(), NumInt, addr.current());
+		AstNodes::Variable *returnLineVar = new AstNodes::Variable(returnLineSymbol.str(), NumInt);
+		result << "POP " << returnLineVar->codeGen() << ENDLINE;
+		
 		result << "JMP " << returnLineVar->codeGen() << ENDLINE;
 		
 		return result.str();
@@ -72,16 +83,23 @@ public:
 		}
 	}
 	
+	std::string name()const {return _name;}
+	
 private:
 	std::string _name;
 	AstNodes::CodeBlock *_codeBlock;
 	std::vector<AstNodes::Declaration*> arguments; //vector of Declaration objects
 	NumberType _returnType;
+	AstNodes::Variable *_returnVariable;
 	
 public:
 	static std::vector<AstNodes::AstNode*> args;
+	static std::vector<AstNodes::AstNode*> callArgs;
+	static AstNodes::Variable *retVar;
 };
 std::vector<AstNodes::AstNode*> Function::args;
+std::vector<AstNodes::AstNode*> Function::callArgs;
+AstNodes::Variable *Function::retVar = NULL;
 
 std::vector<Function*> functions;
 
@@ -95,14 +113,14 @@ namespace AstNodes
 			: AstNode(NodeType::FunctionCall), _name(name)
 		{
 			std::cout << "function call \t name: " << _name << "\n";
-			std::cout << Function::args.size() << " arguments\n";
+			std::cout << Function::callArgs.size() << " arguments\n";
 			
-			for(int i=0;i<Function::args.size();++i)
+			for(int i=0;i<Function::callArgs.size();++i)
 			{
-				arguments.push_back(static_cast<AstNodes::Variable*>(Function::args.at(i)));
+				arguments.push_back(static_cast<AstNodes::Variable*>(Function::callArgs.at(i)));
 			}
 		
-			Function::args.clear();
+			Function::callArgs.clear();
 		}
 		
 		std::string codeGen()
@@ -110,11 +128,11 @@ namespace AstNodes
 			std::stringstream result;
 			
 			
+			result << "PUSH label.afterfcall" << labels.next() << ENDLINE;
 			for(int i=0;i<arguments.size();++i)
 			{
 				result << "PUSH " << arguments.at(i)->codeGen() << ENDLINE;
 			}
-			result << "PUSH label.afterfcall" << labels.next() << ENDLINE;
 			result << "JMP function." << _name << ENDLINE;
 			result << "label.afterfcall" << labels.current() << ":";
 			

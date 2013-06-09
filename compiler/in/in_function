@@ -1,0 +1,25 @@
+int zwroc2()
+{
+	int z;
+	z = 2;
+	return z;
+}
+
+int dodaj(int a, int b)
+{
+	int wynik;
+	wynik = a + b;
+	return wynik;
+}
+
+int w;
+w = zwroc2();
+int a;
+int b;
+int suma;
+a = 3;
+b = 8;
+suma = dodaj(a, b);
+
+
+

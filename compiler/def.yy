@@ -31,6 +31,8 @@ float	fval;
 %token <ival> LC
 %token <fval> LR
 
+%token <return_stmt> RETURN
+
 %token <if> IF
 %token <else> ELSE
 %token <while> WHILE
@@ -71,6 +73,7 @@ blok
 	|for_stmt							{blocksStack.top()->addStmt(elements.get());}
 	|function_call ';'					{blocksStack.top()->addStmt(elements.get());}
 	|sub_block							{blocksStack.top()->addStmt(elements.get());}
+	|RETURN ident ';'					{Function::retVar = static_cast<AstNodes::Variable*>(elements.get());}
 	;
 if_stmt
 	:IF '(' condition ')' sub_block										{AstNodes::AstNode *body = elements.get();AstNodes::AstNode *cond = elements.get();elements.add(new AstNodes::IfStmt(body, cond));}
@@ -217,7 +220,13 @@ indexer
 	;
 	
 // functions
+
 functions_defs
+	:functions_def						{}
+	|functions_defs functions_def		{}
+	;
+
+functions_def
 	:TYPE_INT ident '(' ')'	sub_block					{functions.push_back(new Function(elements.get(), elements.get()));}
 	|TYPE_INT ident '(' arguments_decl ')'	sub_block	{functions.push_back(new Function(elements.get(), elements.get()));}
 	;
@@ -241,7 +250,7 @@ arguments
 	|argument ',' arguments					{}
 	;
 argument
-	:wyr									{Function::args.push_back(elements.get());}
+	:wyr									{Function::callArgs.push_back(elements.get());}
 	;
 %%
 
@@ -262,7 +271,10 @@ int main(int argc, char *argv[])
 		asmFile << "JMP mainstart" << ENDLINE;
 		for(int i=0;i<functions.size();++i)
 		{
+			std::cout << "gen function code: " <<   functions.at(i)->name() << std::endl;
 			functions.at(i)->initSymbols();
+			std::cout << "symbols in f: " << functions.at(i)->name();
+			symbols.printSymbols();
 			asmFile << functions.at(i)->codeGen();
 			functions.at(i)->deinitSymbols();
 		}
