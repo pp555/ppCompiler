@@ -27,6 +27,9 @@ namespace AstNodes
 			symbols.insert(_name, _type, addr.next());
 			return "";
 		}
+		
+		std::string name() const {return _name;}
+		NumberType numType() const {return _type;}
 	private:
 		std::string _name;
 		NumberType _type;

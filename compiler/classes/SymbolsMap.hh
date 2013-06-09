@@ -60,6 +60,15 @@ public:
 
 	}
 	
+	void remove(std::string name)
+	{
+		_symbols.erase(name);
+	}
+	
+	void clear()
+	{
+		_symbols.clear();
+	}
 	
 
 private:

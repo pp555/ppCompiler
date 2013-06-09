@@ -218,13 +218,24 @@ indexer
 	
 // functions
 functions_defs
-	:TYPE_INT ident '(' ')'	sub_block				{functions.push_back(new Function(elements.get(), elements.get()));}
+	:TYPE_INT ident '(' ')'	sub_block					{functions.push_back(new Function(elements.get(), elements.get()));}
+	|TYPE_INT ident '(' arguments_decl ')'	sub_block	{functions.push_back(new Function(elements.get(), elements.get()));}
 	;
 	
 function_call
-	:ID '(' arguments ')'				{printf("TODO:funkcja z argumentami\n");elements.add(new AstNodes::FunctionCall($1));}
-	|ID '(' ')'							{printf("funkcja bez argumentow:%s\n", $1);elements.add(new AstNodes::FunctionCall($1));}
+	:ID '(' arguments ')'				{printf("fcall:funkcja z argumentami\n");elements.add(new AstNodes::FunctionCall($1));}
+	|ID '(' ')'							{printf("fcall:funkcja bez argumentow:%s\n", $1);elements.add(new AstNodes::FunctionCall($1));}
 	;
+	
+arguments_decl
+	:argument_decl								{}
+	|argument_decl ',' arguments_decl			{}
+	;
+
+argument_decl
+	:TYPE_INT ident							{Function::args.push_back(new AstNodes::Declaration(NumInt, static_cast<AstNodes::Variable*>(elements.get())));}
+	;
+
 arguments
 	:argument								{}
 	|argument ',' arguments					{}
@@ -251,7 +262,9 @@ int main(int argc, char *argv[])
 		asmFile << "JMP mainstart" << ENDLINE;
 		for(int i=0;i<functions.size();++i)
 		{
+			functions.at(i)->initSymbols();
 			asmFile << functions.at(i)->codeGen();
+			functions.at(i)->deinitSymbols();
 		}
 		asmFile << "mainstart:";
 	}

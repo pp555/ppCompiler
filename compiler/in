@@ -1,14 +1,16 @@
-int f()
+int f(int a, int b)
 {
 	int x;
-	x = 9999;
+	x = a + b;
+	
 	
 	//f=x;
 }
 
+int arg;
+arg = 5;
 
-int i;
-
-i = f();
+int a;
+a = f(arg, arg);
 
 
