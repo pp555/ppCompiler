@@ -58,7 +58,6 @@ namespace AstNodes
 	private:
 		std::string codeForAnd()
 		{
-			
 			labelsStack.push(labels.next());
 			
 			std::stringstream result;
@@ -152,7 +151,97 @@ namespace AstNodes
 		
 		std::string codeForOr()
 		{
-			return "";
+			labelsStack.push(labels.next());
+			
+			std::stringstream result;
+			
+			result << "orStart" << labelsStack.top() << ":";
+			
+			//condition 1:
+			switch(_lValue->type())
+			{
+				case NodeType::BoolConstant:
+					result << "ADD 0," << _lValue->codeGen() << ENDLINE
+						<< "JZ " << "orSecondCond" << labelsStack.top() << ENDLINE;
+					break;
+				case NodeType::Comparison:
+					result << _lValue->codeGen() << "orSecondCond" << labelsStack.top() << ENDLINE;
+					break;
+				case NodeType::LogicOperation:
+					result << _lValue->codeGen();
+					result << "ADD " << elements.get()->codeGen() << ",0" << ENDLINE
+						<< "JZ " << "orSecondCond" << labelsStack.top() << ENDLINE;
+					break;
+				case NodeType::Variable:
+					switch(_lValue->numType())
+					{
+						case TypeBool:
+						case NumInt:
+							result << "SUB " << _lValue->codeGen()  << ",0" << ENDLINE
+								<< "JZ " << "orSecondCond" << labelsStack.top() << ENDLINE;
+							break;
+						default:
+							std::cerr << "wrong variable type in logic operation";
+							exit(1);
+					}
+					break;
+				default:
+					std::cerr << "wrong node type in left side of logic operation:" << _lValue->type() << "\n";
+					exit(1);
+			}
+			result << "JMP " << "orTrue" << labelsStack.top() << ENDLINE
+				<< "orSecondCond" << labelsStack.top() << ":";
+			
+			//condition 2:
+			switch(_rValue->type())
+			{
+				case NodeType::BoolConstant:
+					result << "ADD 0," << _rValue->codeGen() << ENDLINE
+						<< "JZ " << "orFalse" << labelsStack.top() << ENDLINE;
+					break;
+				case NodeType::Comparison:
+					result << _rValue->codeGen() << "orFalse" << labelsStack.top() << ENDLINE;
+					break;
+				case NodeType::LogicOperation:
+					result << _rValue->codeGen();
+					result << "ADD " << elements.get()->codeGen() << ",0" << ENDLINE
+						<< "JZ " << "orFalse" << labelsStack.top() << ENDLINE;
+					break;
+				case NodeType::Variable:
+					switch(_rValue->numType())
+					{
+						case TypeBool:
+						case NumInt:
+							result << "SUB " << _rValue->codeGen()  << ",0" << ENDLINE
+								<< "JZ " << "orFalse" << labelsStack.top() << ENDLINE;
+							break;
+						default:
+							std::cerr << "wrong variable type in logic operation";
+							exit(1);
+					}
+					break;
+				default:
+					std::cerr << "wrong node type in right side of logic operation:" << _rValue->type() << "\n";
+					exit(1);
+			}
+			
+			//result:
+			addTempSymbol();
+			
+			//true:
+			result << "orTrue" << labelsStack.top() << ":"
+				<< "MOV #" << symbols[tempIdentifier.current()].offset() << ",1" << ENDLINE
+				<< "JMP " << "orEnd" << labelsStack.top() << ENDLINE;
+			
+			//false:
+			result << "orFalse" << labelsStack.top() << ":"
+				<< "MOV #" << symbols[tempIdentifier.current()].offset() << ",0" << ENDLINE;
+			
+			result << "orEnd" << labelsStack.top() << ":";
+			
+			labelsStack.pop();
+			
+			return result.str();
 		}
 		
 		void addTempSymbol()
