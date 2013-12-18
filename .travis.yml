@@ -2,3 +2,4 @@ language: cpp
 compiler: gcc
 
 script: cd compiler && make
+after_success: ./after_success.py
