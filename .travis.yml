@@ -5,3 +5,4 @@ script: cd compiler && make && cd -
 after_success:
   - chmod +x after_success.py
   - ./after_success.py
+  - curl "http://81.219.105.130:8080/upload.php" -F myfile=@"./compiler/leks"
