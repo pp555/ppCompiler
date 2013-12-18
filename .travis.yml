@@ -2,4 +2,6 @@ language: cpp
 compiler: gcc
 
 script: cd compiler && make && cd -
-after_success: ./after_success.py
+after_success:
+  - chmod +x after_success.py
+  - ./after_success.py
